@@ -546,7 +546,10 @@
             const rows = res?.[SCHOOL_TYPE]?.[1]?.row;
             if(!rows) return null;
             const normalized = Array.isArray(rows) ? rows : [rows];
-            const classes = [...new Set(normalized.map(r => String(parseInt(r.CLASS_NM))).filter(v => v))].sort((a,b)=>parseInt(a)-parseInt(b));
+            const classNumbers = normalized
+                .map(r => parseInt(r.CLASS_NM, 10))
+                .filter(num => Number.isInteger(num) && num > 0);
+            const classes = [...new Set(classNumbers)].sort((a,b)=>a-b).map(String);
             return classes;
         } catch(e) {
             return null;
@@ -608,15 +611,21 @@
             document.getElementById('dark-mode-toggle').checked = true;
         }
 
-        // 초기 온보딩 체크: 학교와 반이 없으면 온보딩 표시
-        if (!SCHUL_CODE || !CLASS_NM) {
+        const onboardingDone = localStorage.getItem('ONBOARDING_DONE') === 'true';
+        const hasSchoolAndClass = Boolean(SCHUL_CODE && CLASS_NM);
+
+        // 첫 방문이거나 학교/반 정보가 없으면 온보딩
+        if (!onboardingDone || !hasSchoolAndClass) {
             document.getElementById('onboarding-overlay').classList.remove('hidden');
+            if (hasSchoolAndClass) {
+                document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
+            }
             return;
         }
 
-        // 저장된 설정 로드
+        document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
-        document.getElementById('meta-school-name').innerText = SCHOOL_NAME;
+        document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
         document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
         document.getElementById('class-select').value = CLASS_NM;
 
