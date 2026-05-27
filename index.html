@@ -86,8 +86,9 @@
         .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
-        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; }
+        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
+        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 0.2px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
         /* Cards Base Style */
@@ -218,9 +219,35 @@
         .onboarding-search input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); font-size: 15px; }
         .onboarding-search button { padding: 0 16px; background: var(--accent-blue); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
         .onboarding-results { margin-bottom: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .onboarding-result-item { padding: 12px; background: var(--bg-color); border-radius: 10px; cursor: pointer; border: 1px solid var(--divider); font-size: 14px; font-weight: 600; }
-        .onboarding-result-item:hover { background: rgba(49, 130, 246, 0.08); border-color: var(--accent-blue); }
-        .onboarding-btn { width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; disabled { opacity: 0.5; cursor: not-allowed; } }
+        .onboarding-result-item, .item-node { padding: 12px 14px; background: var(--card-bg); color: var(--text-main); border-radius: 14px; cursor: pointer; border: 1px solid var(--divider); font-size: 14px; font-weight: 700; text-align: center; transition: background 0.2s, border-color 0.2s; }
+        .onboarding-result-item:hover, .item-node:hover { background: rgba(49, 130, 246, 0.08); border-color: var(--accent-blue); }
+        .onboarding-step-group { display: flex; flex-direction: column; gap: 14px; }
+        .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; width: 100%; }
+        .onboarding-class-placeholder { width: 100%; }
+        .onboarding-result-item { min-height: 52px; display: inline-flex; align-items: center; justify-content: center; }
+        .onboarding-search,
+        .search-container { flex-wrap: wrap; }
+        .onboarding-search input,
+        .search-container input,
+        .onboarding-select,
+        .menu-row select,
+        .item-node,
+        .onboarding-result-item {
+            color: var(--text-main);
+            background: var(--card-bg);
+        }
+        .onboarding-search button,
+        .search-container button,
+        .onboarding-btn {
+            color: white;
+        }
+        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 24px; max-width: min(420px,100%); width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-search input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); font-size: 15px; }
+        .onboarding-search button { padding: 0 16px; background: var(--accent-blue); border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .search-container input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); font-size: 15px; }
+        .search-container button { padding: 0 16px; background: var(--accent-blue); border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .bottom-sheet { position: fixed; bottom: -460px; left: 0; width: 100%; max-height: calc(100vh - 80px); background: var(--card-bg); border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 3001; transition: bottom 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+        #searchSheet { height: auto; max-height: calc(100vh - 80px); }
     </style>
 </head>
 <body>
@@ -329,9 +356,10 @@
 </div>
 
 <main>
-    <div class="date-picker-wrapper" onclick="document.getElementById('main-date-input').showPicker()">
+    <div class="date-picker-wrapper" onclick="document.getElementById('main-date-input').showPicker()" title="날짜를 눌러 변경하세요">
         <div class="school-badge" id="meta-school-name">-</div>
         <div class="date-display" id="meta-date-label">로딩 중...</div>
+        <div class="date-hint">날짜를 눌러 변경</div>
         <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()">
     </div>
 
@@ -376,6 +404,7 @@
     
     let MAP_COLORS = {}; 
     let MAP_MOVING_POOL = {};
+    let onboardingSelectedGrade = null;
 
     async function fetchNeis(urlPath, queryParams = {}) {
         const params = new URLSearchParams({ urlPath, ...queryParams });
@@ -462,16 +491,77 @@
     }
 
     function showClassSelection() {
-        const overlay = document.getElementById('onboarding-overlay');
-        const card = overlay.querySelector('.onboarding-card');
-        document.getElementById('onboarding-title').innerText = '반을 선택하세요';
-        document.getElementById('onboarding-desc').innerText = '시간표를 확인할 반을 선택해주세요.';
-        
-        let html = '';
-        for(let i = 1; i <= 15; i++) {
-            html += `<button class="onboarding-result-item" style="border: none; background: var(--bg-color); display: block; width: 100%; text-align: center;" onclick="onboardingPickClass('${i}')">${i}반</button>`;
-        }
+        onboardingSelectedGrade = null;
+        document.getElementById('onboarding-title').innerText = '학년을 선택하세요';
+        document.getElementById('onboarding-desc').innerText = '먼저 학년을 선택한 뒤, 반을 선택해주세요.';
+        const grades = getGradeOptionsBySchoolType();
+
+        let html = `<div class="onboarding-step-group"><div class="onboarding-grid">`;
+        grades.forEach(g => {
+            html += `<button class="onboarding-result-item" onclick="onboardingPickGrade('${g}')">${g}학년</button>`;
+        });
+        html += `</div></div><div id="onboarding-class-placeholder" class="onboarding-class-placeholder"></div>`;
         document.getElementById('onboarding-content').innerHTML = html;
+    }
+
+    async function onboardingPickGrade(grade) {
+        onboardingSelectedGrade = grade;
+        localStorage.setItem('G_VAL', grade);
+        document.getElementById('grade-select').value = grade;
+        document.getElementById('onboarding-title').innerText = '반을 선택하세요';
+        document.getElementById('onboarding-desc').innerText = '선택 가능한 반을 자동으로 확인합니다.';
+        const placeholder = document.getElementById('onboarding-class-placeholder');
+        placeholder.innerHTML = '<div class="loading">반 번호를 확인 중입니다...</div>';
+
+        const classNumbers = await fetchGradeClassNumbers(grade);
+        renderOnboardingClassButtons(classNumbers);
+    }
+
+    function renderOnboardingClassButtons(classNumbers) {
+        const placeholder = document.getElementById('onboarding-class-placeholder');
+        if(!classNumbers || classNumbers.length === 0) {
+            const maxClass = getDefaultClassCountBySchoolType();
+            classNumbers = Array.from({ length: maxClass }, (_, i) => i + 1);
+        }
+
+        let html = `<div class="onboarding-grid">`;
+        classNumbers.forEach(num => {
+            html += `<button class="onboarding-result-item" onclick="onboardingPickClass('${num}')">${num}반</button>`;
+        });
+        html += `</div>`;
+        placeholder.innerHTML = html;
+    }
+
+    async function fetchGradeClassNumbers(grade) {
+        const dateInput = document.getElementById('main-date-input')?.value || new Date().toISOString().slice(0,10);
+        const apiStr = dateInput.replace(/-/g, '');
+        try {
+            const res = await fetchNeis(SCHOOL_TYPE, {
+                Type: 'json',
+                ATPT_OFCDC_SC_CODE: ATPT_CODE,
+                SD_SCHUL_CODE: SCHUL_CODE,
+                ALL_TI_YMD: apiStr,
+                GRADE: grade
+            });
+            const rows = res?.[SCHOOL_TYPE]?.[1]?.row;
+            if(!rows) return null;
+            const normalized = Array.isArray(rows) ? rows : [rows];
+            const classes = [...new Set(normalized.map(r => String(parseInt(r.CLASS_NM))).filter(v => v))].sort((a,b)=>parseInt(a)-parseInt(b));
+            return classes;
+        } catch(e) {
+            return null;
+        }
+    }
+
+    function getGradeOptionsBySchoolType() {
+        if(SCHOOL_TYPE === 'elsTimetable') return [1, 2, 3, 4, 5, 6];
+        return [1, 2, 3];
+    }
+
+    function getDefaultClassCountBySchoolType() {
+        if(SCHOOL_TYPE === 'elsTimetable') return 11;
+        if(SCHOOL_TYPE === 'misTimetable') return 9;
+        return 15;
     }
 
     function onboardingPickClass(classNm) {
@@ -484,6 +574,7 @@
 
     function closeOnboarding() {
         document.getElementById('onboarding-overlay').classList.add('hidden');
+        localStorage.setItem('ONBOARDING_DONE', 'true');
         refresh();
         setInterval(computeLiveTimeline, 1000);
     }
@@ -536,29 +627,6 @@
         buildPaletteUI();
         refresh();
         setInterval(computeLiveTimeline, 1000);
-    }
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('active');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
-
-    function changeTheme(isDark) {
-        const t = isDark ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('THEME', t);
-        refresh();
-    }
-
-    function saveGradeClass() {
-        const grade = document.getElementById('grade-select').value;
-        const classNm = document.getElementById('class-select').value;
-        
-        localStorage.setItem('G_VAL', grade);
-        localStorage.setItem('CLASS_NM', classNm);
-        CLASS_NM = classNm;
-        
-        refresh();
     }
 
     function onMainDateChanged() { refresh(); }
@@ -657,7 +725,7 @@
                 
                 const displayName = movingData ? movingData.newSubject : fallbackName;
                 const movingClass = movingData ? movingData.movingClass : null;
-                const colorKey = `${currentClass}-${displayName}`;
+                const colorKey = movingData ? `${movingClass}-${displayName}` : `${currentClass}-${displayName}`;
                 const cid = MAP_COLORS[colorKey] || 'none';
                 
                 let style = displayName && cid !== 'none' ? `background: var(--sub-${cid}); color: var(--sub-txt-${cid}); font-weight: 700;` : '';
@@ -678,6 +746,7 @@
         const movingData = MAP_MOVING_POOL[movingKey];
         
         const displayName = movingData ? movingData.newSubject : fallbackName;
+        const colorClass = movingData ? movingData.movingClass : currentClass;
 
         cellContext = { dateStr, dayIdx, period, fallbackName, classNm: currentClass };
         
@@ -685,7 +754,7 @@
         
         document.getElementById('moving-toggle').checked = !!movingData;
 
-        const colorKey = `${currentClass}-${displayName}`;
+        const colorKey = `${colorClass}-${displayName}`;
         const currentCid = MAP_COLORS[colorKey] || 'none';
         document.querySelectorAll('.color-item').forEach(el => {
             if(el.dataset.id === currentCid) el.classList.add('active');
@@ -820,10 +889,11 @@
         const movingKey = `${cellContext.classNm}-${cellContext.fallbackName}`;
         const movingData = MAP_MOVING_POOL[movingKey];
         const targetName = movingData ? movingData.newSubject : cellContext.fallbackName;
+        const colorClass = movingData ? movingData.movingClass : cellContext.classNm;
 
         if(!targetName) return;
 
-        const colorKey = `${cellContext.classNm}-${targetName}`;
+        const colorKey = `${colorClass}-${targetName}`;
         if(cid === 'none') delete MAP_COLORS[colorKey];
         else MAP_COLORS[colorKey] = cid;
         
@@ -1064,7 +1134,7 @@
                     
                     const finalName = movingData ? movingData.newSubject : fallbackName;
                     const movingClass = movingData ? movingData.movingClass : null;
-                    const colorKey = `${currentClass}-${finalName}`;
+                    const colorKey = movingData ? `${movingClass}-${finalName}` : `${currentClass}-${finalName}`;
                     const cid = MAP_COLORS[colorKey] || '';
                     
                     let dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
@@ -1181,12 +1251,17 @@
     }
     function pickSchool(name, atpt, schul, type) {
         SCHOOL_NAME = name; ATPT_CODE = atpt; SCHUL_CODE = schul; SCHOOL_TYPE = type;
-        localStorage.setItem('SCHOOL_NAME', name); localStorage.setItem('ATPT_CODE', atpt); localStorage.setItem('SCHUL_CODE', schul); localStorage.setItem('SCHOOL_TYPE', type);
+        localStorage.setItem('SCHOOL_NAME', name);
+        localStorage.setItem('ATPT_CODE', atpt);
+        localStorage.setItem('SCHUL_CODE', schul);
+        localStorage.setItem('SCHOOL_TYPE', type);
+        localStorage.removeItem('CLASS_NM');
+        CLASS_NM = null;
         document.getElementById('meta-school-name').innerText = name;
         closeSearchSheet();
-        loadSchoolSettings();
+        loadSettings();
         buildPaletteUI();
-        refresh();
+        showClassSelection();
     }
 
     init();
