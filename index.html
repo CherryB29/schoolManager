@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>오늘의 학교 - 프리미엄</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* ================= [ CSS Variables: Smart Adaptive Palettes ] ================= */
+        :root {
+            --bg-color: #F2F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #191F28;
+            --text-secondary: #8B95A1;
+            --accent-blue: #3182F6;
+            --divider: #E5E8EB;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --modal-bg: rgba(0, 0, 0, 0.3);
+
+            /* Light Mode: Elegant Pastels */
+            --sub-1: #FFD2D2; --sub-txt-1: #D63031;
+            --sub-2: #FFE4C4; --sub-txt-2: #E17055;
+            --sub-3: #FFF2CC; --sub-txt-3: #D4AC0D;
+            --sub-4: #E2F0D9; --sub-txt-4: #2D7D46;
+            --sub-5: #CDE2F7; --sub-txt-5: #1B4F72;
+            --sub-6: #E1E1F5; --sub-txt-6: #2471A3;
+            --sub-7: #EAD8F7; --sub-txt-7: #6C3483;
+            --sub-none: #E5E8EB; --sub-txt-none: #8B95A1;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1C1C1E;
+            --text-main: #F9F9F9;
+            --text-secondary: #A0A0A0;
+            --accent-blue: #3B82F6;
+            --divider: #2C2C2E;
+            --nav-bg: rgba(28, 28, 30, 0.85);
+            --modal-bg: rgba(0, 0, 0, 0.6);
+
+            /* Dark Mode: Neon Vivids */
+            --sub-1: #FF4D4D; --sub-txt-1: #FFFFFF;
+            --sub-2: #FF944D; --sub-txt-2: #FFFFFF;
+            --sub-3: #FFD700; --sub-txt-3: #121212;
+            --sub-4: #2ECC71; --sub-txt-4: #FFFFFF;
+            --sub-5: #3498DB; --sub-txt-5: #FFFFFF;
+            --sub-6: #5B5EA6; --sub-txt-6: #FFFFFF;
+            --sub-7: #9B59B6; --sub-txt-7: #FFFFFF;
+            --sub-none: #2C2C2E; --sub-txt-none: #A0A0A0;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-color); color: var(--text-main);
+            margin: 0; padding: 0; overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background-color: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 100; border-bottom: 1px solid var(--divider);
+            padding-top: env(safe-area-inset-top); height: calc(56px + env(safe-area-inset-top));
+        }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 4px; }
+        .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
+
+        /* Multi-Column Adaptive Layout Grid */
+        main { padding: calc(80px + env(safe-area-inset-top)) 16px 28px; max-width: 480px; margin: 0 auto; transition: max-width 0.3s ease; }
+        .dashboard-grid { display: flex; flex-direction: column; gap: 20px; }
+
+        /* 가로형 화면 대응 미디어 쿼리 (태블릿, PC 및 가로형 스마트폰 디바이스) */
+        @media (min-width: 768px) {
+            main { max-width: 1400px; padding: calc(80px + env(safe-area-inset-top)) 28px 32px; }
+            .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; align-items: start; }
+            .left-column { grid-column: 1; }
+            .middle-column { grid-column: 2; }
+            .right-column { grid-column: 3; }
+        }
+
+        .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
+        
+        /* Date Title Area Line Configuration */
+        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; }
+        .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
+        .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+        /* Cards Base Style */
+        .card { background-color: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.02); }
+        .card h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-secondary); letter-spacing: -0.3px; }
+
+        /* Premium NOW Card UI Structure */
+        .now-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .now-header h2 { margin: 0 !important; color: var(--accent-blue) !important; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+        .now-clock { font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+        
+        .now-main { background: linear-gradient(135deg, var(--card-bg), var(--bg-color)); padding: 20px; border-radius: 16px; margin-bottom: 14px; border: 1px solid var(--divider); }
+        .now-main.is-critical { --accent-blue: #EF4444; }
+        
+        .now-time-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
+        .now-title { font-size: 28px; font-weight: 800; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.5px; }
+        .now-subtitle { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 12px; }
+        .now-time-info { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 13px; font-weight: 600; color: var(--accent-blue); }
+        .now-time-info.critical { color: #EF4444; }
+        .now-remaining { display: inline-block; background: var(--bg-color); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        
+        .now-section { background: var(--bg-color); padding: 14px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--divider); }
+        .now-section:last-child { margin-bottom: 0; }
+        .now-section.next-event { opacity: 0.75; }
+        .now-lbl { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.4px; }
+        .now-val { font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--text-main); }
+        .now-val.subject { font-size: 16px; font-weight: 700; }
+        .meal-summary { font-size: 14px; font-weight: 500; color: var(--text-main); line-height: 1.6; }
+
+        /* Timetable List Styling */
+        .timetable-list { list-style: none; padding: 0; margin: 0; }
+        .timetable-list li { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--divider); }
+        .timetable-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .period { color: var(--text-secondary); font-weight: 700; font-size: 13px; width: 50px; }
+        .subject-container { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .subject { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        
+        /* Achromatic Minimal Moving Badge */
+        .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
+        .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
+
+        /* Sidebar Settings Layout */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 1000; }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background: var(--bg-color); z-index: 1001; transition: transform 0.25s ease; display: flex; flex-direction: column; }
+        .sidebar.active { transform: translateX(300px); }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .sidebar-header { padding: calc(16px + env(safe-area-inset-top)) 20px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
+        .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 800; }
+        .sidebar-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+        .menu-row { background: var(--card-bg); padding: 16px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 15px; }
+        .menu-row select { border: none; background: transparent; color: var(--accent-blue); font-size: 15px; font-weight: 700; outline: none; text-align: right; cursor: pointer; direction: rtl; }
+        .menu-clickable { cursor: pointer; }
+        .menu-clickable svg { width: 16px; height: 16px; fill: var(--text-secondary); }
+
+        /* iOS Switch UI Style */
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E5E8EB; transition: .2s; border-radius: 30px; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-blue); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Timetable Week Grid Modal */
+        .full-sheet-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-bg); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000; }
+        .full-sheet { position: fixed; bottom: -100vh; left: 0; width: 100%; height: 88vh; background: var(--bg-color); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 2001; transition: bottom 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); display: flex; flex-direction: column; overflow: hidden; }
+        .full-sheet.active { bottom: 0; }
+        .full-sheet-overlay.active { opacity: 1; visibility: visible; }
+        .sheet-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
+        .week-navigator { display: flex; align-items: center; gap: 16px; padding: 6px 14px; font-weight: 700; font-size: 14px; }
+        .nav-arrow { background: none; border: none; cursor: pointer; font-size: 16px; font-weight: 800; color: var(--text-main); }
+
+        .sheet-body { flex: 1; overflow: auto; padding: 10px; }
+        .grid-matrix { display: grid; grid-template-columns: 34px repeat(5, minmax(0, 1fr)); gap: 4px; }
+        .grid-lbl { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 4px 0; }
+        
+        .grid-cell { background: var(--card-bg); border-radius: 4px; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; text-align: center; cursor: pointer; font-size: 11px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); transition: transform 0.1s; min-width: 0; }
+        .grid-cell:active { transform: scale(0.96); }
+        .grid-cell b { display: block; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+        .grid-cell.p-idx { background: none; box-shrink: 0; box-shadow: none; color: var(--text-secondary); font-weight: 700; cursor: default; }
+        .grid-cell-moving { font-size: 9px; font-weight: 700; background: var(--bg-color); color: var(--text-secondary); padding: 2px 4px; border-radius: 4px; margin-top: 2px; border: 1px solid var(--divider); }
+
+        /* Styles Control Drawer Bottom sheets */
+        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: 0.2s; z-index: 3000; }
+        .bottom-sheet { position: fixed; bottom: -460px; left: 0; width: 100%; max-height: 80vh; background: var(--card-bg); border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 3001; transition: bottom 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+        .bottom-sheet.active { bottom: 0; }
+        .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
+        
+        .bottom-sheet h4 { margin: 0 0 16px 0; font-size: 18px; font-weight: 800; }
+        .option-node { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 700; font-size: 15px; }
+        
+        .palette-box { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 16px; }
+        .color-item { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-item.active { border-color: var(--text-main); transform: scale(1.05); }
+
+        .moving-pool-section { border-top: 1px solid var(--divider); padding-top: 14px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .moving-pool-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
+        .moving-grid-scroll { overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 180px; padding-bottom: 10px; }
+        .moving-chip { background: var(--bg-color); padding: 10px 6px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; min-width: 0; }
+        .moving-chip.active { border-color: var(--accent-blue); background: rgba(49, 130, 246, 0.08); }
+        .moving-chip div:first-child { font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .moving-chip div:last-child { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* School Finder Structure Layout */
+        .search-container { display: flex; gap: 8px; width: 100%; margin-top: 12px; }
+        .search-container input { flex: 1; padding: 14px; border-radius: 12px; border: none; background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; }
+        .search-container button { padding: 0 16px; border-radius: 12px; border: none; background: var(--accent-blue); color: white; font-weight: 700; cursor: pointer; }
+        .list-results { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+        .item-node { padding: 14px; background: var(--card-bg); border-radius: 12px; cursor: pointer; border: 1px solid var(--divider); }
+        .loading, .empty { color: var(--text-secondary); text-align: center; padding: 20px 0; font-size: 13px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M4 18h16v-2H4v2zm0-5h16v-2H4v2zm0-7v2h16V6H4z"/></svg></button>
+    <div style="width: 26px;"></div>
+</nav>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>설정</h2>
+        <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="sidebar-content">
+        <div class="menu-row">
+            <span>다크 모드</span>
+            <label class="switch">
+                <input type="checkbox" id="dark-mode-toggle" onchange="changeTheme(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="menu-row">
+            <span>학년</span>
+            <select id="grade-select" onchange="saveGradeClass()">
+                <option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option>
+                <option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option>
+            </select>
+        </div>
+        <div class="menu-row">
+            <span>반</span>
+            <select id="class-select" onchange="saveGradeClass()">
+                <script>for(let i=1; i<=15; i++) document.write(`<option value="${i}">${i}반</option>`);</script>
+            </select>
+        </div>
+        <div class="menu-row menu-clickable" onclick="openEditorSheet()">
+            <span>시간표 편집</span>
+            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+        <div class="menu-row menu-clickable" onclick="openSearchSheet()">
+            <span>학교 변경</span>
+            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+    </div>
+</aside>
+
+<div class="full-sheet-overlay" id="fullSheetOverlay" onclick="closeEditorSheet()"></div>
+<div class="full-sheet" id="fullSheet">
+    <div class="sheet-header">
+        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+            <select id="profile-select" onchange="onProfileSelect()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--divider); background: var(--card-bg); color: var(--text-main); cursor: pointer; font-weight: 600;">
+                <option value="">프로필 선택</option>
+            </select>
+            <button onclick="openProfileCreate()" style="padding: 8px 12px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">+ 프로필 추가</button>
+            <button onclick="resetCurrentProfileSettings()" style="padding: 8px 12px; background: #888; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;" title="현재 프로필의 모든 설정을 초기화합니다">⟲ 초기화</button>
+        </div>
+        <div class="week-navigator">
+            <button class="nav-arrow" onclick="navigateWeek(-7)">&lt;</button>
+            <span id="week-date-label">00.00 ~ 00.00</span>
+            <button class="nav-arrow" onclick="navigateWeek(7)">&gt;</button>
+        </div>
+        <button class="icon-btn" onclick="closeEditorSheet()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="sheet-body" id="editor-grid-container"></div>
+</div>
+
+<div class="bottom-sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
+<div class="bottom-sheet" id="bottomSheet">
+    <h4 id="pop-title">-</h4>
+    <div class="option-node">
+        <span>이동수업 설정</span>
+        <label class="switch">
+            <input type="checkbox" id="moving-toggle" onchange="toggleMovingState(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+    
+    <div class="palette-box" id="palette-matrix"></div>
+
+    <div class="moving-pool-section" id="moving-pool-wrapper" style="display:none;">
+        <div class="moving-pool-title">개설된 분반 선택</div>
+        <div class="moving-grid-scroll" id="moving-pool-grid"></div>
+    </div>
+</div>
+
+<div class="bottom-sheet-overlay" id="searchSheetOverlay" onclick="closeSearchSheet()"></div>
+<div class="bottom-sheet" id="searchSheet" style="bottom: -500px; height: 440px;">
+    <h4>학교 검색</h4>
+    <div class="search-container">
+        <input type="text" id="query-input" placeholder="학교명 입력" onkeypress="if(event.key === 'Enter') executeSchoolSearch()">
+        <button onclick="executeSchoolSearch()">검색</button>
+    </div>
+    <div id="query-results" class="list-results"></div>
+</div>
+
+<main>
+    <div class="date-picker-wrapper" onclick="document.getElementById('main-date-input').showPicker()">
+        <div class="school-badge" id="meta-school-name">-</div>
+        <div class="date-display" id="meta-date-label">로딩 중...</div>
+        <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()">
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <div class="left-column">
+            <div class="card">
+                <div class="now-header">
+                    <h2>NOW</h2>
+                    <div class="now-clock" id="now-clock">00:00:00</div>
+                </div>
+                
+                <div id="now-container">데이터 동기화 중...</div>
+            </div>
+        </div>
+
+        <div class="middle-column">
+            <div class="card">
+                <h2>시간표</h2>
+                <div id="render-timetable"><div class="loading">...</div></div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="card">
+                <h2>급식</h2>
+                <div id="render-meal"><div class="loading">...</div></div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const PROXY_ENDPOINT = '/api/get-data';
+    
+    let ATPT_CODE = localStorage.getItem('ATPT_CODE') || "J10";
+    let SCHUL_CODE = localStorage.getItem('SCHUL_CODE') || "7530129";
+    let SCHOOL_TYPE = localStorage.getItem('SCHOOL_TYPE') || "hisTimetable";
+    let SCHOOL_NAME = localStorage.getItem('SCHOOL_NAME') || "태장고등학교";
+
+    async function fetchNeis(urlPath, params = {}) {
+        const query = new URLSearchParams({
+            urlPath,
+            Type: 'json',
+            ATPT_OFCDC_SC_CODE: ATPT_CODE,
+            SD_SCHUL_CODE: SCHUL_CODE,
+            ...params
+        }).toString();
+
+        const response = await fetch(`${PROXY_ENDPOINT}?${query}`);
+        return response.json();
+    }
+
+    let CURRENT_PROFILE_ID = localStorage.getItem(`ACTIVE_PROFILE_${SCHUL_CODE}`) || null;
+    let PROFILES = {};
+    
+    let MAP_COLORS = {}; 
+    let MAP_MOVING_POOL = {}; // 반-과목 → {이동반, 새과목명}
+
+    let editorAnchorDate = new Date();
+    let cellContext = { dateStr: "", dayIdx: null, period: null, fallbackName: "", classNm: "" };
+    let weekDataBuffer = {};
+    let globalTodayRows = [];
+    let globalMealLines = [];
+    let globalTomorrowRows = [];
+    let globalTomorrowMealLines = [];
+    
+    // 2026년 대한민국 공휴일
+    const HOLIDAYS_2026 = [
+        '20260101', // 신정
+        '20260126', '20260127', '20260128', '20260129', '20260130', '20260131', // 설날 연휴
+        '20260303', // 삼일절
+        '20260404', // 부활절
+        '20260505', // 어린이날
+        '20260515', // 부처님 오신 날
+        '20260606', // 현충일
+        '20260815', // 광복절
+        '20260918', '20260919', '20260920', '20260921', '20260922', // 추석 연휴
+        '20261003', // 개천절
+        '20261009', // 한글날
+        '20261225'  // 크리스마스
+    ];
+    
+    function isHoliday(dateStr) {
+        return HOLIDAYS_2026.includes(dateStr);
+    }
+    
+    function getNextSchoolDay(fromDate) {
+        const d = new Date(fromDate);
+        d.setDate(d.getDate() + 1);
+        for(let i = 0; i < 7; i++) {
+            const dayOfWeek = d.getDay();
+            const dateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+            if(dayOfWeek >= 1 && dayOfWeek <= 5 && !isHoliday(dateStr)) {
+                return d;
+            }
+            d.setDate(d.getDate() + 1);
+        }
+        return null;
+    }
+
+    function loadProfiles() {
+        PROFILES = JSON.parse(localStorage.getItem(`PROFILES_${SCHUL_CODE}`)) || {};
+        if(!CURRENT_PROFILE_ID || !PROFILES[CURRENT_PROFILE_ID]) {
+            const firstProfileId = Object.keys(PROFILES)[0];
+            CURRENT_PROFILE_ID = firstProfileId || null;
+        }
+        if(CURRENT_PROFILE_ID) {
+            localStorage.setItem(`ACTIVE_PROFILE_${SCHUL_CODE}`, CURRENT_PROFILE_ID);
+        }
+    }
+
+    function saveProfiles() {
+        localStorage.setItem(`PROFILES_${SCHUL_CODE}`, JSON.stringify(PROFILES));
+    }
+
+    function loadProfileSettings() {
+        if(!CURRENT_PROFILE_ID) {
+            MAP_COLORS = {};
+            MAP_MOVING_POOL = {};
+            return;
+        }
+        MAP_COLORS = JSON.parse(localStorage.getItem(`MAP_COLORS_${SCHUL_CODE}_${CURRENT_PROFILE_ID}`)) || {};
+        MAP_MOVING_POOL = JSON.parse(localStorage.getItem(`MAP_MOVING_POOL_${SCHUL_CODE}_${CURRENT_PROFILE_ID}`)) || {};
+    }
+
+    function saveProfileSettings() {
+        if(!CURRENT_PROFILE_ID) return;
+        localStorage.setItem(`MAP_COLORS_${SCHUL_CODE}_${CURRENT_PROFILE_ID}`, JSON.stringify(MAP_COLORS));
+        localStorage.setItem(`MAP_MOVING_POOL_${SCHUL_CODE}_${CURRENT_PROFILE_ID}`, JSON.stringify(MAP_MOVING_POOL));
+    }
+
+    function createProfile(profileName) {
+        const profileId = `profile_${Date.now()}`;
+        const grade = document.getElementById('grade-select').value;
+        const classNm = document.getElementById('class-select').value;
+        
+        PROFILES[profileId] = { name: profileName, grade, classNm, createdAt: new Date().toISOString() };
+        CURRENT_PROFILE_ID = profileId;
+        MAP_COLORS = {};
+        MAP_MOVING_POOL = {};
+        
+        saveProfiles();
+        saveProfileSettings();
+        localStorage.setItem(`ACTIVE_PROFILE_${SCHUL_CODE}`, profileId);
+        return profileId;
+    }
+
+    function switchProfile(profileId) {
+        if(!PROFILES[profileId]) return;
+        CURRENT_PROFILE_ID = profileId;
+        localStorage.setItem(`ACTIVE_PROFILE_${SCHUL_CODE}`, profileId);
+        const profile = PROFILES[profileId];
+        document.getElementById('grade-select').value = profile.grade;
+        document.getElementById('class-select').value = profile.classNm;
+        loadProfileSettings();
+        cellContext = { dateStr: "", dayIdx: null, period: null, fallbackName: "", classNm: profile.classNm };  // 프로필 전환 시 cellContext 초기화
+        refresh();
+    }
+
+    function deleteProfile(profileId) {
+        delete PROFILES[profileId];
+        localStorage.removeItem(`MAP_COLORS_${SCHUL_CODE}_${profileId}`);
+        localStorage.removeItem(`MAP_MOVING_POOL_${SCHUL_CODE}_${profileId}`);
+        saveProfiles();
+        
+        if(CURRENT_PROFILE_ID === profileId) {
+            CURRENT_PROFILE_ID = Object.keys(PROFILES)[0] || null;
+            if(CURRENT_PROFILE_ID) {
+                switchProfile(CURRENT_PROFILE_ID);
+            }
+        }
+    }
+
+    function loadSchoolSettings() {
+        loadProfiles();
+        loadProfileSettings();
+    }
+
+    function saveSchoolSettings() {
+        saveProfileSettings();
+    }
+
+    function init() {
+        if ((localStorage.getItem('THEME') || 'light') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('dark-mode-toggle').checked = true;
+        }
+        document.getElementById('meta-school-name').innerText = SCHOOL_NAME;
+        
+        loadSchoolSettings();
+        
+        // 프로필이 없으면 기본 프로필 생성
+        if(Object.keys(PROFILES).length === 0) {
+            const grade = localStorage.getItem('G_VAL') || "3";
+            const classNm = localStorage.getItem('C_VAL') || "11";
+            createProfile('기본 프로필');
+            PROFILES[CURRENT_PROFILE_ID].grade = grade;
+            PROFILES[CURRENT_PROFILE_ID].classNm = classNm;
+            saveProfiles();
+        } else if(CURRENT_PROFILE_ID && PROFILES[CURRENT_PROFILE_ID]) {
+            const profile = PROFILES[CURRENT_PROFILE_ID];
+            document.getElementById('grade-select').value = profile.grade;
+            document.getElementById('class-select').value = profile.classNm;
+        } else {
+            document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || "3";
+            document.getElementById('class-select').value = localStorage.getItem('C_VAL') || "11";
+        }
+
+        const now = new Date();
+        const strToday = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        document.getElementById('main-date-input').value = strToday;
+
+        buildPaletteUI();
+        refresh();
+        
+        // 1초 주기로 초 단위 시간 정보 및 NOW 상태 트래킹 실시간 반영
+        setInterval(computeLiveTimeline, 1000);
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function changeTheme(isDark) {
+        const t = isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('THEME', t);
+        refresh();
+    }
+
+    function saveGradeClass() {
+        const grade = document.getElementById('grade-select').value;
+        const classNm = document.getElementById('class-select').value;
+        
+        if(CURRENT_PROFILE_ID && PROFILES[CURRENT_PROFILE_ID]) {
+            PROFILES[CURRENT_PROFILE_ID].grade = grade;
+            PROFILES[CURRENT_PROFILE_ID].classNm = classNm;
+            saveProfiles();
+        } else {
+            localStorage.setItem('G_VAL', grade);
+            localStorage.setItem('C_VAL', classNm);
+        }
+        
+        refresh();
+    }
+
+    function onMainDateChanged() { refresh(); }
+
+    function getWeekRange(anchor) {
+        const d = new Date(anchor);
+        const day = d.getDay();
+        const dist = d.getDate() - day + (day === 0 ? -6 : 1);
+        const mon = new Date(d.setDate(dist));
+        const res = [];
+        for(let i=0; i<5; i++) {
+            const t = new Date(mon); t.setDate(mon.getDate() + i);
+            res.push({ dayIdx: i+1, apiStr: `${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`, dateObj: t });
+        }
+        return res;
+    }
+
+    async function openEditorSheet() {
+        toggleSidebar();
+        document.getElementById('fullSheetOverlay').classList.add('active');
+        document.getElementById('fullSheet').classList.add('active');
+        editorAnchorDate = new Date(document.getElementById('main-date-input').value);
+        
+        // 프로필 목록 갱신
+        updateProfileSelect();
+        
+        await syncWeeklyMatrix();
+    }
+
+    function updateProfileSelect() {
+        const select = document.getElementById('profile-select');
+        select.innerHTML = '<option value="">프로필 선택</option>';
+        
+        Object.entries(PROFILES).forEach(([id, profile]) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${profile.name} (${profile.grade}학년 ${profile.classNm}반)`;
+            if(id === CURRENT_PROFILE_ID) option.selected = true;
+            select.appendChild(option);
+        });
+    }
+
+    function onProfileSelect() {
+        const profileId = document.getElementById('profile-select').value;
+        if(profileId) {
+            switchProfile(profileId);
+            updateProfileSelect();
+            syncWeeklyMatrix();  // 프로필 전환 후 새 반의 시간표 데이터 로드
+        }
+    }
+
+    function openProfileCreate() {
+        const profileName = prompt('프로필 이름을 입력하세요:');
+        if(profileName && profileName.trim()) {
+            createProfile(profileName.trim());
+            updateProfileSelect();
+            syncWeeklyMatrix();
+        }
+    }
+
+    function resetCurrentProfileSettings() {
+        if(!CURRENT_PROFILE_ID) {
+            alert('프로필을 선택해주세요');
+            return;
+        }
+        if(confirm('현재 프로필의 모든 설정(색상, 이동수업)을 초기화하시겠습니까?')) {
+            MAP_COLORS = {};
+            MAP_MOVING_POOL = {};
+            saveProfileSettings();
+            renderWeeklyGrid();
+            refresh();
+            alert('설정이 초기화되었습니다');
+        }
+    }
+
+    function closeEditorSheet() {
+        document.getElementById('fullSheetOverlay').classList.remove('active');
+        document.getElementById('fullSheet').classList.remove('active');
+        refresh();
+    }
+
+    async function navigateWeek(days) {
+        editorAnchorDate.setDate(editorAnchorDate.getDate() + days);
+        await syncWeeklyMatrix();
+    }
+
+    async function syncWeeklyMatrix() {
+        const box = document.getElementById('editor-grid-container');
+        box.innerHTML = '<div class="loading">조회 중...</div>';
+        
+        const range = getWeekRange(editorAnchorDate);
+        document.getElementById('week-date-label').innerText = `${String(range[0].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[0].dateObj.getDate()).padStart(2,'0')} ~ ${String(range[4].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[4].dateObj.getDate()).padStart(2,'0')}`;
+
+        const g = document.getElementById('grade-select').value;
+        const c = document.getElementById('class-select').value;
+        weekDataBuffer = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
+
+        try {
+            const tasks = range.map(w => {
+                return fetchNeis(SCHOOL_TYPE, {
+                    ALL_TI_YMD: w.apiStr,
+                    GRADE: g,
+                    CLASS_NM: c
+                }).then(res => {
+                    weekDataBuffer[w.dayIdx] = { _dateStr: w.apiStr };
+                    if(res[SCHOOL_TYPE]) {
+                        res[SCHOOL_TYPE][1].row.forEach(r => { weekDataBuffer[w.dayIdx][r.PERIO] = r.ITRT_CNTNT.trim(); });
+                    }
+                });
+            });
+            await Promise.all(tasks);
+            renderWeeklyGrid();
+        } catch(e) { box.innerHTML = '<div class="empty">데이터 연동 실패</div>'; }
+    }
+
+    function renderWeeklyGrid() {
+        const box = document.getElementById('editor-grid-container');
+        const headers = ['교시', '월', '화', '수', '목', '금'];
+        let html = '<div class="grid-matrix">';
+        headers.forEach(h => html += `<div class="grid-lbl">${h}</div>`);
+        const currentClass = document.getElementById('class-select').value;
+
+        for(let p=1; p<=7; p++) {
+            html += `<div class="grid-cell p-idx">${p}</div>`;
+            for(let d=1; d<=5; d++) {
+                const dData = weekDataBuffer[d] || {};
+                const apiStr = dData._dateStr || "";
+                const fallbackName = dData[p] || '';
+                
+                const movingKey = `${currentClass}-${fallbackName}`;
+                const movingData = MAP_MOVING_POOL[movingKey];
+                
+                const displayName = movingData ? movingData.newSubject : fallbackName;
+                const movingClass = movingData ? movingData.movingClass : null;
+                const colorKey = `${currentClass}-${displayName}`;
+                const cid = MAP_COLORS[colorKey] || 'none';
+                
+                let style = displayName && cid !== 'none' ? `background: var(--sub-${cid}); color: var(--sub-txt-${cid}); font-weight: 700;` : '';
+                let badge = movingClass ? `<span class="grid-cell-moving">${movingClass}반</span>` : '';
+                
+                html += `<div class="grid-cell" style="${style}" onclick="openCellConfig('${apiStr}', ${d}, ${p}, '${fallbackName}')"><b>${displayName || '-'}</b>${badge}</div>`;
+            }
+        }
+        html += '</div>';
+        box.innerHTML = html;
+    }
+
+    async function openCellConfig(dateStr, dayIdx, period, fallbackName) {
+        if(!dateStr) return;
+        
+        const currentClass = document.getElementById('class-select').value;
+        const movingKey = `${currentClass}-${fallbackName}`;
+        const movingData = MAP_MOVING_POOL[movingKey];
+        
+        const displayName = movingData ? movingData.newSubject : fallbackName;
+
+        cellContext = { dateStr, dayIdx, period, fallbackName, classNm: currentClass };
+        
+        document.getElementById('pop-title').innerText = displayName || `${period}교시 설정`;
+        
+        document.getElementById('moving-toggle').checked = !!movingData;
+
+        const colorKey = `${currentClass}-${displayName}`;
+        const currentCid = MAP_COLORS[colorKey] || 'none';
+        document.querySelectorAll('.color-item').forEach(el => {
+            if(el.dataset.id === currentCid) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+
+        document.getElementById('bottomSheetOverlay').classList.add('active');
+        document.getElementById('bottomSheet').classList.add('active');
+
+        if(movingData) {
+            await loadMovingPool(dateStr, period, movingData.movingClass);
+        } else {
+            document.getElementById('moving-pool-wrapper').style.display = 'none';
+        }
+    }
+
+    function closeBottomSheet() {
+        document.getElementById('bottomSheetOverlay').classList.remove('active');
+        document.getElementById('bottomSheet').classList.remove('active');
+    }
+
+    async function toggleMovingState(checked) {
+        const targetFallback = cellContext.fallbackName;
+        const defaultClass = document.getElementById('class-select').value;
+
+        const movingKey = `${defaultClass}-${targetFallback}`;
+
+        if(!targetFallback) {
+            // 공강인 경우 처리 안 함
+            return;
+        }
+
+        if(checked) {
+            // 이동수업 활성화 - 토글만 켜고 분반 선택 대기
+            if(!MAP_MOVING_POOL[movingKey]) {
+                MAP_MOVING_POOL[movingKey] = { newSubject: targetFallback, movingClass: defaultClass };
+            }
+        } else {
+            // 이동수업 비활성화
+            delete MAP_MOVING_POOL[movingKey];
+        }
+
+        saveSchoolSettings();
+        renderWeeklyGrid();
+        refresh();
+
+        if(checked) {
+            await loadMovingPool(cellContext.dateStr, cellContext.period, defaultClass);
+        } else {
+            document.getElementById('moving-pool-wrapper').style.display = 'none';
+        }
+    }
+
+    async function loadMovingPool(dateStr, period, activeClassNm) {
+        const poolGrid = document.getElementById('moving-pool-grid');
+        document.getElementById('moving-pool-wrapper').style.display = 'flex';
+        poolGrid.innerHTML = '<div class="loading" style="grid-column: span 3;">과목 리스트 동기화 중...</div>';
+
+        const g = document.getElementById('grade-select').value;
+        
+        try {
+            const res = await fetchNeis(SCHOOL_TYPE, {
+                ALL_TI_YMD: dateStr,
+                GRADE: g
+            });
+            if(res[SCHOOL_TYPE]) {
+                const rawRows = res[SCHOOL_TYPE][1].row;
+                const periodRows = rawRows.filter(r => parseInt(r.PERIO) === parseInt(period));
+                periodRows.sort((a,b) => parseInt(a.CLASS_NM) - parseInt(b.CLASS_NM));
+
+                if(periodRows.length === 0) {
+                    poolGrid.innerHTML = '<div class="empty" style="grid-column: span 3;">개설 과목 정보 없음</div>';
+                    return;
+                }
+
+                let html = '';
+                periodRows.forEach(row => {
+                    const cNm = row.CLASS_NM;
+                    const sbj = row.ITRT_CNTNT.trim();
+                    const isActive = (String(cNm) === String(activeClassNm));
+                    
+                    html += `
+                        <div class="moving-chip ${isActive ? 'active' : ''}" onclick="selectMovingSubject('${sbj}', '${cNm}')">
+                            <div>${sbj}</div>
+                            <div>${cNm}반 교실</div>
+                        </div>
+                    `;
+                });
+                poolGrid.innerHTML = html;
+            } else {
+                poolGrid.innerHTML = '<div class="empty" style="grid-column: span 3;">과목 정보를 불러올 수 없습니다.</div>';
+            }
+        } catch(e) {
+            poolGrid.innerHTML = '<div class="empty" style="grid-column: span 3;">네트워크 스캔 오류</div>';
+        }
+    }
+
+    function selectMovingSubject(subject, classNm) {
+        const targetFallback = cellContext.fallbackName;
+        const currentClass = cellContext.classNm;
+
+        const movingKey = `${currentClass}-${targetFallback}`;
+        
+        // 반-과목에 이동수업 정보 저장
+        MAP_MOVING_POOL[movingKey] = { newSubject: subject, movingClass: classNm };
+
+        saveSchoolSettings();
+        document.getElementById('pop-title').innerText = subject;
+        
+        document.querySelectorAll('.moving-chip').forEach(chip => {
+            if(chip.innerText.includes(`${classNm}반`)) chip.classList.add('active');
+            else chip.classList.remove('active');
+        });
+
+        renderWeeklyGrid();
+        refresh();
+    }
+
+    function buildPaletteUI() {
+        const box = document.getElementById('palette-matrix');
+        let html = '';
+        for(let i=1; i<=7; i++) {
+            html += `<div class="color-item" data-id="${i}" style="background:var(--sub-${i});" onclick="pickColorTheme('${i}')"></div>`;
+        }
+        html += `<div class="color-item" data-id="none" style="background:var(--sub-none);" onclick="pickColorTheme('none')"></div>`;
+        box.innerHTML = html;
+    }
+
+    function pickColorTheme(cid) {
+        const movingKey = `${cellContext.classNm}-${cellContext.fallbackName}`;
+        const movingData = MAP_MOVING_POOL[movingKey];
+        const targetName = movingData ? movingData.newSubject : cellContext.fallbackName;
+
+        if(!targetName) return;
+
+        const colorKey = `${cellContext.classNm}-${targetName}`;
+        if(cid === 'none') delete MAP_COLORS[colorKey];
+        else MAP_COLORS[colorKey] = cid;
+        
+        saveSchoolSettings();
+        
+        document.querySelectorAll('.color-item').forEach(el => {
+            if(el.dataset.id === cid) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+
+        renderWeeklyGrid();
+        refresh();
+    }
+
+    /* 초 단위 갱신 시 NOW 카드 실시간 렌더링 */
+    function computeLiveTimeline() {
+        const clockEl = document.getElementById('now-clock');
+        const container = document.getElementById('now-container');
+        const now = new Date();
+        
+        // 1. 시계 업데이트
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        if (clockEl) clockEl.innerText = `${hrs}:${mins}:${secs}`;
+
+        const totalMins = now.getHours() * 60 + now.getMinutes();
+        const day = now.getDay();
+        const apiStr = document.getElementById('main-date-input').value.replace(/-/g, '');
+        
+        // 타임라인 (시작분, 종료분)
+        const timeline = [
+            { p: 1, start: 540, end: 590, name: '1교시' },
+            { p: 'b1', start: 590, end: 600, name: '쉬는시간' },
+            { p: 2, start: 600, end: 650, name: '2교시' },
+            { p: 'b2', start: 650, end: 660, name: '쉬는시간' },
+            { p: 3, start: 660, end: 710, name: '3교시' },
+            { p: 'b3', start: 710, end: 720, name: '쉬는시간' },
+            { p: 4, start: 720, end: 770, name: '4교시' },
+            { p: 'lunch', start: 770, end: 820, name: '점심시간' },
+            { p: 5, start: 820, end: 870, name: '5교시' },
+            { p: 'b5', start: 870, end: 880, name: '쉬는시간' },
+            { p: 6, start: 880, end: 930, name: '6교시' },
+            { p: 'b6', start: 930, end: 940, name: '쉬는시간' },
+            { p: 7, start: 940, end: 990, name: '7교시' }
+        ];
+        
+        function timeStr(mins) {
+            return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+        }
+        
+        function getSubject(pNum, rows) {
+            if (!pNum || pNum > 7) return "";
+            const row = rows.find(r => parseInt(r.PERIO) === pNum);
+            let subName = row ? row.ITRT_CNTNT.trim() : "";
+            
+            const g = document.getElementById('grade-select').value;
+            const c = document.getElementById('class-select').value;
+            const movingKey = `${c}-${subName}`;
+            const movingData = MAP_MOVING_POOL[movingKey];
+            
+            if(movingData) {
+                return `${movingData.newSubject} (${movingData.movingClass}반)`;
+            }
+            return subName || "공강";
+        }
+        
+        function renderSchoolDay() {
+            let found = timeline.find(t => totalMins >= t.start && totalMins < t.end);
+            let html = '';
+            
+            if (totalMins < 540) {
+                // 등교 전
+                html = `<div class="now-main">
+                    <div class="now-time-label">등교 전</div>
+                    <div class="now-title">등교 준비 중</div>
+                    <div class="now-subtitle">첫 번째 수업</div>
+                    <div class="now-time-info">
+                        <span>${timeStr(540)} ~ ${timeStr(590)}</span>
+                        <span class="now-remaining">${getSubject(1, globalTodayRows)}</span>
+                    </div>
+                </div>`;
+            } else if (totalMins >= 990) {
+                // 학교 끝난 후
+                html = `<div class="now-main">
+                    <div class="now-time-label">학교 종료</div>
+                    <div class="now-title">오늘 일정 완료</div>
+                    <div class="now-subtitle">내일을 준비하세요</div>
+                </div>
+                <div class="now-section next-event">
+                    <div class="now-lbl">내일의 첫 수업</div>
+                    <div class="now-val subject">${getSubject(1, globalTomorrowRows)}</div>
+                    <div class="now-val">1교시 09:00 ~ 09:50</div>
+                </div>`;
+            } else if (found) {
+                const remaining = found.end - totalMins;
+                const isCritical = remaining <= 2;
+                
+                if (typeof found.p === 'number') {
+                    // 수업 중
+                    const subject = getSubject(found.p, globalTodayRows);
+                    const nextPeriod = found.p + 1;
+                    const nextSubject = nextPeriod <= 7 ? getSubject(nextPeriod, globalTodayRows) : '';
+                    
+                    html = `<div class="now-main ${isCritical ? 'is-critical' : ''}">
+                        <div class="now-time-label">현재 진행</div>
+                        <div class="now-title">${found.p}교시</div>
+                        <div class="now-subtitle">${subject}</div>
+                        <div class="now-time-info ${isCritical ? 'critical' : ''}">
+                            <span>${timeStr(found.start)} ~ ${timeStr(found.end)}</span>
+                            <span class="now-remaining">${remaining}분 남음</span>
+                        </div>
+                    </div>
+                    <div class="now-section next-event">
+                        <div class="now-lbl">다음 시간</div>
+                        <div class="now-val subject">${nextSubject}</div>
+                        <div class="now-val">${nextPeriod}교시 ${timeStr(timeline.find(t => t.p === nextPeriod)?.start || 0)}</div>
+                    </div>`;
+                } else if (found.p === 'lunch') {
+                    // 점심시간
+                    const meals = globalMealLines.join(', ');
+                    const nextSubject = getSubject(5, globalTodayRows);
+                    
+                    html = `<div class="now-main">
+                        <div class="now-time-label">점심시간</div>
+                        <div class="now-subtitle">오늘의 급식</div>
+                        <div class="now-val meal-summary">${meals || '급식 정보 없음'}</div>
+                        <div class="now-time-info">
+                            <span>${timeStr(770)} ~ ${timeStr(820)}</span>
+                            <span class="now-remaining">${remaining}분 남음</span>
+                        </div>
+                    </div>
+                    <div class="now-section next-event">
+                        <div class="now-lbl">다음 시간</div>
+                        <div class="now-val subject">${nextSubject}</div>
+                        <div class="now-val">5교시 13:40</div>
+                    </div>`;
+                } else if (String(found.p).startsWith('b')) {
+                    // 쉬는시간
+                    const isCritical2 = remaining <= 2;
+                    const nextP = parseInt(found.p.replace('b', '')) + 1;
+                    const nextSubject = getSubject(nextP, globalTodayRows);
+                    
+                    html = `<div class="now-main ${isCritical2 ? 'is-critical' : ''}">
+                        <div class="now-time-label">쉬는 시간</div>
+                        <div class="now-title">휴식 중</div>
+                        <div class="now-time-info ${isCritical2 ? 'critical' : ''}">
+                            <span>${timeStr(found.start)} ~ ${timeStr(found.end)}</span>
+                            <span class="now-remaining">${remaining}분 남음</span>
+                        </div>
+                    </div>
+                    <div class="now-section next-event">
+                        <div class="now-lbl">다음 수업</div>
+                        <div class="now-val subject">${nextSubject}</div>
+                        <div class="now-val">${nextP}교시 ${timeStr(found.end)}</div>
+                    </div>`;
+                }
+            } else {
+                html = `<div class="now-main"><div class="now-title">-</div></div>`;
+            }
+            
+            return html;
+        }
+        
+        function renderNonSchoolDay() {
+            // 주말이나 공휴일
+            const nextDay = getNextSchoolDay(now);
+            if (!nextDay) {
+                return `<div class="now-main"><div class="now-title">학사 일정 정보 없음</div></div>`;
+            }
+            
+            const dateStr = `${nextDay.getFullYear()}${String(nextDay.getMonth()+1).padStart(2,'0')}${String(nextDay.getDate()).padStart(2,'0')}`;
+            const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayLabel = dayLabels[nextDay.getDay()];
+            
+            let html = `<div class="now-main">
+                <div class="now-time-label">다음 학교날</div>
+                <div class="now-title" style="font-size:22px;">${nextDay.getMonth()+1}월 ${nextDay.getDate()}일 ${dayLabel}요일</div>
+                <div class="now-subtitle">첫 수업: ${getSubject(1, globalTomorrowRows)}</div>
+                <div class="now-time-info" style="margin-top:8px;">
+                    <span>09:00 ~ 09:50</span>
+                </div>
+            </div>`;
+            
+            if (globalTomorrowMealLines.length > 0) {
+                html += `<div class="now-section next-event">
+                    <div class="now-lbl">급식</div>
+                    <div class="now-val meal-summary">${globalTomorrowMealLines.join(', ')}</div>
+                </div>`;
+            }
+            
+            return html;
+        }
+        
+        // 학교가는 날 판단 (월~금이고 공휴일 아님)
+        const dateStr2 = now.getFullYear() + '' + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+        const isSchoolDay = (day >= 1 && day <= 5) && !isHoliday(dateStr2);
+        
+        container.innerHTML = isSchoolDay ? renderSchoolDay() : renderNonSchoolDay();
+    }
+
+    async function refresh() {
+        const rawDate = document.getElementById('main-date-input').value;
+        const apiStr = rawDate.replace(/-/g, '');
+        const dObj = new Date(rawDate);
+        
+        const dayLabels = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+        document.getElementById('meta-date-label').innerHTML = `${dObj.getMonth()+1}월 ${dObj.getDate()}일 ${dayLabels[dObj.getDay()]}`;
+
+        const g = document.getElementById('grade-select').value;
+        const c = document.getElementById('class-select').value;
+
+        const timeBox = document.getElementById('render-timetable');
+        timeBox.innerHTML = '<div class="loading">...</div>';
+        
+        try {
+            const res = await fetchNeis(SCHOOL_TYPE, {
+                ALL_TI_YMD: apiStr,
+                GRADE: g,
+                CLASS_NM: c
+            });
+            
+            if(res[SCHOOL_TYPE]) {
+                globalTodayRows = res[SCHOOL_TYPE][1].row;
+                globalTodayRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
+                
+                let html = '<ul class="timetable-list">';
+                const currentClass = document.getElementById('class-select').value;
+                globalTodayRows.forEach(r => {
+                    const fallbackName = r.ITRT_CNTNT.trim();
+                    const p = r.PERIO;
+                    
+                    const movingKey = `${currentClass}-${fallbackName}`;
+                    const movingData = MAP_MOVING_POOL[movingKey];
+                    
+                    const finalName = movingData ? movingData.newSubject : fallbackName;
+                    const movingClass = movingData ? movingData.movingClass : null;
+                    const colorKey = `${currentClass}-${finalName}`;
+                    const cid = MAP_COLORS[colorKey] || '';
+                    
+                    let dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
+                    let badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
+                    let textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
+
+                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                });
+                html += '</ul>';
+                timeBox.innerHTML = html;
+            } else { timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>'; globalTodayRows = []; }
+        } catch(e) { timeBox.innerHTML = '<div class="empty">시간표 수집 실패</div>'; globalTodayRows = []; }
+
+        const mealBox = document.getElementById('render-meal');
+        mealBox.innerHTML = '<div class="loading">...</div>';
+        try {
+            const res = await fetchNeis('mealServiceDietInfo', {
+                MLSV_YMD: apiStr
+            });
+            if(res.mealServiceDietInfo) {
+                let dish = res.mealServiceDietInfo[1].row[0].DDISH_NM;
+                let clean = dish.replace(/<br\s*\/?>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
+                globalMealLines = clean.split('\n').map(l => l.trim()).filter(l => l);
+                mealBox.innerHTML = globalMealLines.map(l => `<div class="meal-item">${l}</div>`).join('');
+            } else { mealBox.innerHTML = '<div class="empty">급식 없음</div>'; globalMealLines = []; }
+        } catch(e) { mealBox.innerHTML = '<div class="empty">식단 수집 실패</div>'; globalMealLines = []; }
+
+        // 내일 시간표 & 급식 미리 로드
+        loadTomorrowData(g, c);
+        computeLiveTimeline();
+    }
+    
+    async function loadTomorrowData(g, c) {
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowDateStr = `${tomorrow.getFullYear()}${String(tomorrow.getMonth()+1).padStart(2,'0')}${String(tomorrow.getDate()).padStart(2,'0')}`;
+        
+        try {
+            // 내일 시간표
+            const ttRes = await fetchNeis(SCHOOL_TYPE, {
+                ALL_TI_YMD: tomorrowDateStr,
+                GRADE: g,
+                CLASS_NM: c
+            });
+            if(ttRes[SCHOOL_TYPE]) {
+                globalTomorrowRows = ttRes[SCHOOL_TYPE][1].row;
+                globalTomorrowRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
+            } else {
+                globalTomorrowRows = [];
+            }
+        } catch(e) {
+            globalTomorrowRows = [];
+        }
+        
+        try {
+            // 내일 급식
+            const mealRes = await fetchNeis('mealServiceDietInfo', {
+                MLSV_YMD: tomorrowDateStr
+            });
+            if(mealRes.mealServiceDietInfo) {
+                let dish = mealRes.mealServiceDietInfo[1].row[0].DDISH_NM;
+                let clean = dish.replace(/<br\s*\/?>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
+                globalTomorrowMealLines = clean.split('\n').map(l => l.trim()).filter(l => l);
+            } else {
+                globalTomorrowMealLines = [];
+            }
+        } catch(e) {
+            globalTomorrowMealLines = [];
+        }
+    }
+
+    function openSearchSheet() {
+        toggleSidebar();
+        document.getElementById('searchSheetOverlay').classList.add('active');
+        document.getElementById('searchSheet').classList.add('active');
+        document.getElementById('searchSheet').style.bottom = '0';
+    }
+    function closeSearchSheet() {
+        document.getElementById('searchSheetOverlay').classList.remove('active');
+        document.getElementById('searchSheet').classList.remove('active');
+        document.getElementById('searchSheet').style.bottom = '-500px';
+    }
+    async function executeSchoolSearch() {
+        const word = document.getElementById('query-input').value.trim();
+        const box = document.getElementById('query-results');
+        if(!word) return;
+        box.innerHTML = '<div class="loading">...</div>';
+        try {
+            const res = await fetchNeis('schoolInfo', {
+                SCHUL_NM: word
+            });
+            if(res.schoolInfo) {
+                let html = '';
+                res.schoolInfo[1].row.forEach(r => {
+                    let type = "hisTimetable";
+                    if(r.SCHUL_KND_SC_NM.includes('초등')) type = 'elsTimetable';
+                    else if(r.SCHUL_KND_SC_NM.includes('중학')) type = 'misTimetable';
+                    html += `<div class="item-node" onclick="pickSchool('${r.SCHUL_NM}','${r.ATPT_OFCDC_SC_CODE}','${r.SD_SCHUL_CODE}','${type}')"><div style="font-weight:700;font-size:15px;">${r.SCHUL_NM}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${r.ORG_RDNMA}</div></div>`;
+                });
+                box.innerHTML = html;
+            } else { box.innerHTML = '<div class="empty">검색 결과 없음</div>'; }
+        } catch(e) { box.innerHTML = '<div class="empty">네트워크 에러</div>'; }
+    }
+    function pickSchool(name, atpt, schul, type) {
+        SCHOOL_NAME = name; ATPT_CODE = atpt; SCHUL_CODE = schul; SCHOOL_TYPE = type;
+        localStorage.setItem('SCHOOL_NAME', name); localStorage.setItem('ATPT_CODE', atpt); localStorage.setItem('SCHUL_CODE', schul); localStorage.setItem('SCHOOL_TYPE', type);
+        document.getElementById('meta-school-name').innerText = name;
+        closeSearchSheet();
+        loadSchoolSettings();
+        buildPaletteUI();
+        refresh();
+    }
+
+    init();
+</script>
+</body>
+</html>
