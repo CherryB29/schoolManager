@@ -162,37 +162,9 @@
         .week-navigator { display: flex; align-items: center; gap: 16px; padding: 6px 14px; font-weight: 700; font-size: 14px; }
         .nav-arrow { background: none; border: none; cursor: pointer; font-size: 16px; font-weight: 800; color: var(--text-main); }
 
-        .sheet-body { flex: 1; overflow: auto; padding: 10px; display: grid; gap: 18px; }
-        .schedule-settings-card { background: var(--card-bg); border: 1px solid var(--divider); border-radius: 22px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .schedule-settings-card h3 { margin: 0 0 16px; font-size: 17px; font-weight: 800; color: var(--text-main); }
-        .setting-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-bottom: 14px; }
-        .setting-row:last-child { margin-bottom: 0; }
-        .setting-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
-        .setting-control { display: flex; gap: 8px; align-items: center; }
-        .setting-control input[type="time"],
-        .setting-control input[type="number"] { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 14px; }
-        .primary-button { width: 100%; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 800; color: #fff; background: var(--accent-blue); cursor: pointer; box-shadow: 0 16px 30px rgba(49,130,246,0.14); }
-        .primary-button:hover { opacity: 0.95; }
-        .date-picker-overlay { position: fixed; inset: 0; background: rgba(19, 24, 33, 0.28); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.25s; z-index: 4000; }
-        .date-picker-overlay.active { opacity: 1; visibility: visible; }
-        .date-picker-card { width: min(560px, calc(100% - 32px)); background: var(--card-bg); border-radius: 28px; box-shadow: 0 24px 70px rgba(0,0,0,0.14); padding: 24px; }
-        .calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-        .calendar-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
-        .calendar-month-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; }
-        .calendar-month-nav button { width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 18px; cursor: pointer; }
-        .calendar-month-label { font-weight: 800; color: var(--text-main); }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-        .calendar-day-name, .calendar-day { display: flex; align-items: center; justify-content: center; min-height: 42px; border-radius: 16px; font-size: 13px; font-weight: 700; }
-        .calendar-day-name { color: var(--text-secondary); }
-        .calendar-day { border: 1px solid transparent; background: var(--bg-color); cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease; }
-        .calendar-day:hover { transform: translateY(-1px); border-color: var(--divider); }
-        .calendar-day.active { background: var(--accent-blue); color: white; border-color: transparent; }
-        .calendar-day-empty { visibility: hidden; }
-        #main-date-input { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-        .date-picker-wrapper { position: relative; }
-        .date-picker-wrapper::after { content: '\25BE'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 14px; pointer-events: none; }
-        .date-picker-wrapper:hover .date-display { opacity: 0.92; }
-        .date-picker-wrapper .date-display { display: inline-block; }
+        .sheet-body { flex: 1; overflow: auto; padding: 10px; }
+        .grid-matrix { display: grid; grid-template-columns: 32px repeat(5, minmax(0, 1fr)); gap: 3px; }
+        .grid-lbl { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 6px 0; }
         
         .grid-cell { background: var(--card-bg); border-radius: 6px; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; text-align: center; cursor: pointer; font-size: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.1s; min-width: 0; flex-wrap: wrap; }
         .grid-cell:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
@@ -208,7 +180,7 @@
 
         /* Styles Control Drawer Bottom sheets */
         .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: 0.2s; z-index: 3000; }
-        .bottom-sheet { position: fixed; bottom: -460px; left: 0; width: 100%; max-height: calc(100vh - 80px); background: var(--card-bg); border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 3001; transition: bottom 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+        .bottom-sheet { position: fixed; bottom: -460px; left: 0; width: 100%; max-height: 80vh; background: var(--card-bg); border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 3001; transition: bottom 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
         .bottom-sheet.active { bottom: 0; }
         .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
         
@@ -238,36 +210,21 @@
         /* Onboarding Modal */
         .onboarding-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); opacity: 1; visibility: visible; transition: 0.3s; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; }
         .onboarding-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 32px; max-width: 380px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
-        .onboarding-card h2 { font-size: 24px; font-weight: 800; margin: 0 0 12px 0; color: var(--text-main); }
-        .onboarding-card p { font-size: 14px; color: var(--text-secondary); margin: 0 0 24px 0; line-height: 1.6; }
+        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-card h2 { font-size: 22px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); }
+        .onboarding-card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.6; font-weight: 500; }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
-        .onboarding-search { display: flex; gap: 8px; margin-bottom: 12px; }
-        .onboarding-search input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); font-size: 15px; }
-        .onboarding-search button { padding: 0 16px; background: var(--accent-blue); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        .onboarding-results { margin-bottom: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .onboarding-result-item, .item-node { padding: 12px 14px; background: var(--card-bg); color: var(--text-main); border-radius: 14px; cursor: pointer; border: 1px solid var(--divider); font-size: 14px; font-weight: 700; text-align: center; transition: background 0.2s, border-color 0.2s; }
+        .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
+        .onboarding-search input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--divider); background: var(--bg-color); font-size: 14px; font-weight: 500; }
+        .onboarding-search button { padding: 0 14px; background: var(--accent-blue); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .onboarding-results { margin-bottom: 12px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .onboarding-result-item, .item-node { padding: 12px 14px; background: var(--card-bg); color: var(--text-main); border-radius: 12px; cursor: pointer; border: 1px solid var(--divider); font-size: 13px; font-weight: 600; text-align: center; transition: background 0.2s, border-color 0.2s; }
         .onboarding-result-item:hover, .item-node:hover { background: rgba(49, 130, 246, 0.08); border-color: var(--accent-blue); }
-        .onboarding-step-group { display: flex; flex-direction: column; gap: 14px; }
-        .onboarding-step-group { display: grid; gap: 10px; }
-        .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; width: 100%; }
+        .onboarding-step-group { display: flex; flex-direction: column; gap: 12px; }
+        .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; width: 100%; }
         .onboarding-class-placeholder { width: 100%; }
-        .onboarding-result-item, .item-node {
-            min-height: 52px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            line-height: 1.4;
-            color: var(--text-main);
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 12px 14px;
-            border: 1px solid var(--divider);
-            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-        }
-        .onboarding-result-item:hover, .item-node:hover { transform: translateY(-1px); border-color: var(--accent-blue); background: rgba(49, 130, 246, 0.08); }
+        .onboarding-result-item { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
         .onboarding-search,
         .search-container { flex-wrap: wrap; }
         .onboarding-search input,
@@ -330,9 +287,16 @@
             </label>
         </div>
         <div class="menu-row">
+            <span>학년</span>
+            <select id="grade-select" onchange="saveGradeClass()">
+                <option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option>
+                <option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option>
+            </select>
+        </div>
+        <div class="menu-row">
             <span>반</span>
             <select id="class-select" onchange="saveGradeClass()">
-                <script>for(let i=1; i<=15; i++) document.write(`<option value="${i}">${i}반</option>`);</script>
+                <!-- Dynamic options populated by updateClassOptions() -->
             </select>
         </div>
         <div class="menu-row menu-clickable" onclick="openEditorSheet()">
@@ -378,43 +342,9 @@
     <div class="moving-pool-section" id="moving-pool-wrapper" style="display:none;">
         <div class="moving-pool-title">개설된 분반 선택</div>
         <div class="moving-grid-scroll" id="moving-pool-grid"></div>
-    <div class="schedule-settings-card">
-        <h3>시간표 세부 설정</h3>
-        <div class="setting-row">
-            <div class="setting-label">1교시 시작 시간</div>
-            <div class="setting-control"><input type="time" id="schedule-first-start"/></div>
-        </div>
-        <div class="setting-row">
-            <div class="setting-label">수업 시간</div>
-            <div class="setting-control"><input type="number" id="schedule-period-duration" min="30" max="90" step="5"/> 분</div>
-        </div>
-        <div class="setting-row">
-            <div class="setting-label">쉬는 시간</div>
-            <div class="setting-control"><input type="number" id="schedule-break-duration" min="5" max="30" step="1"/> 분</div>
-        </div>
-        <div class="setting-row">
-            <div class="setting-label">점심 시간</div>
-            <div class="setting-control"><input type="number" id="schedule-lunch-duration" min="20" max="90" step="5"/> 분</div>
-        </div>
-        <button class="primary-button" onclick="saveScheduleSettings()">설정 저장</button>
     </div>
 </div>
 
-<div class="date-picker-overlay" id="datePickerOverlay" onclick="closeCustomDatePicker()">
-    <div class="date-picker-card" onclick="event.stopPropagation()">
-        <div class="calendar-header">
-            <h3>날짜 선택</h3>
-            <button class="icon-btn" onclick="closeCustomDatePicker()">✕</button>
-        </div>
-        <div class="calendar-month-nav">
-            <button onclick="changeCalendarMonth(-1)">‹</button>
-            <div id="calendar-month-label" class="calendar-month-label"></div>
-            <button onclick="changeCalendarMonth(1)">›</button>
-        </div>
-        <div class="calendar-grid" id="calendar-grid"></div>
-        <button class="primary-button" onclick="closeCustomDatePicker()">닫기</button>
-    </div>
-</div>
 <div class="bottom-sheet-overlay" id="searchSheetOverlay" onclick="closeSearchSheet()"></div>
 <div class="bottom-sheet" id="searchSheet" style="bottom: -500px; height: 440px;">
     <h4>학교 검색</h4>
@@ -426,7 +356,7 @@
 </div>
 
 <main>
-    <div class="date-picker-wrapper" onclick="openCustomDatePicker()" title="날짜를 눌러 변경하세요">
+    <div class="date-picker-wrapper" onclick="document.getElementById('main-date-input').showPicker()" title="날짜를 눌러 변경하세요">
         <div class="school-badge" id="meta-school-name">-</div>
         <div class="date-display" id="meta-date-label">로딩 중...</div>
         <div class="date-hint">날짜를 눌러 변경</div>
@@ -557,11 +487,11 @@
         localStorage.setItem('SCHOOL_TYPE', type);
         
         loadSettings();
+        updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
         showClassSelection();
     }
 
     function showClassSelection() {
-        document.getElementById('onboarding-overlay').classList.remove('hidden');
         onboardingSelectedGrade = null;
         document.getElementById('onboarding-title').innerText = '학년을 선택하세요';
         document.getElementById('onboarding-desc').innerText = '먼저 학년을 선택한 뒤, 반을 선택해주세요.';
@@ -578,6 +508,7 @@
     async function onboardingPickGrade(grade) {
         onboardingSelectedGrade = grade;
         localStorage.setItem('G_VAL', grade);
+        document.getElementById('grade-select').value = grade;
         document.getElementById('onboarding-title').innerText = '반을 선택하세요';
         document.getElementById('onboarding-desc').innerText = '선택 가능한 반을 자동으로 확인합니다.';
         const placeholder = document.getElementById('onboarding-class-placeholder');
@@ -594,7 +525,7 @@
             classNumbers = Array.from({ length: maxClass }, (_, i) => i + 1);
         }
 
-        let html = `<div class="onboarding-grid">`;
+        let html = `<div class="onboarding-grid" style="max-height: 200px; overflow-y: auto;">`;
         classNumbers.forEach(num => {
             html += `<button class="onboarding-result-item" onclick="onboardingPickClass('${num}')">${num}반</button>`;
         });
@@ -637,41 +568,10 @@
         return 15;
     }
 
-    function getCurrentGrade() {
-        return localStorage.getItem('G_VAL') || '1';
-    }
-
-    async function populateClassSelect(grade, selectedClass = null) {
-        const select = document.getElementById('class-select');
-        select.innerHTML = '<option value="">불러오는 중...</option>';
-
-        const classNumbers = await fetchGradeClassNumbers(grade);
-        let classes = classNumbers;
-        if(!classes || classes.length === 0) {
-            const maxClass = getDefaultClassCountBySchoolType();
-            classes = Array.from({ length: maxClass }, (_, i) => String(i + 1));
-        }
-
-        select.innerHTML = classes.map(num => `<option value="${num}">${num}반</option>`).join('');
-        if(selectedClass && classes.includes(selectedClass)) {
-            select.value = selectedClass;
-        } else {
-            select.value = classes[0] || '';
-        }
-    }
-
-    function saveGradeClass() {
-        const classNm = document.getElementById('class-select').value || '1';
-        localStorage.setItem('CLASS_NM', classNm);
-        CLASS_NM = classNm;
-        document.getElementById('class-select').value = classNm;
-        refresh();
-    }
-
-    async function onboardingPickClass(classNm) {
+    function onboardingPickClass(classNm) {
         CLASS_NM = classNm;
         localStorage.setItem('CLASS_NM', classNm);
-        await populateClassSelect(getCurrentGrade(), classNm);
+        document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
         document.getElementById('class-select').value = classNm;
         closeOnboarding();
     }
@@ -679,6 +579,7 @@
     function closeOnboarding() {
         document.getElementById('onboarding-overlay').classList.add('hidden');
         localStorage.setItem('ONBOARDING_DONE', 'true');
+        updateClassOptions();  // 반 옵션 업데이트
         refresh();
         setInterval(computeLiveTimeline, 1000);
     }
@@ -695,15 +596,31 @@
         refresh();
     }
 
-    async function init() {
-        // 날짜 기본값 설정
-        const mainDateInput = document.getElementById('main-date-input');
-        const now = new Date();
-        const strToday = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        if(!mainDateInput.value) {
-            mainDateInput.value = strToday;
+    function updateClassOptions() {
+        const classSelect = document.getElementById('class-select');
+        const maxClass = getDefaultClassCountBySchoolType();
+        classSelect.innerHTML = '';
+        for(let i=1; i<=maxClass; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = i + '반';
+            classSelect.appendChild(opt);
         }
+        // 현재 저장된 반이 있으면 선택
+        if(CLASS_NM) classSelect.value = CLASS_NM;
+    }
 
+    function saveGradeClass() {
+        const grade = document.getElementById('grade-select').value;
+        const classNm = document.getElementById('class-select').value;
+        localStorage.setItem('G_VAL', grade);
+        localStorage.setItem('CLASS_NM', classNm);
+        CLASS_NM = classNm;
+        refresh();
+    }
+
+
+    function init() {
         // 테마 로드
         if ((localStorage.getItem('THEME') || 'light') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -725,11 +642,15 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
-        const savedGrade = getCurrentGrade();
-        await populateClassSelect(savedGrade, CLASS_NM);
+        updateClassOptions();  // 반 옵션 동적 생성
+        document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
+        document.getElementById('class-select').value = CLASS_NM;
+
+        const now = new Date();
+        const strToday = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        document.getElementById('main-date-input').value = strToday;
 
         buildPaletteUI();
-        renderScheduleSettings();
         refresh();
         setInterval(computeLiveTimeline, 1000);
     }
@@ -753,7 +674,6 @@
         toggleSidebar();
         document.getElementById('fullSheetOverlay').classList.add('active');
         document.getElementById('fullSheet').classList.add('active');
-        renderScheduleSettings();
         editorAnchorDate = new Date(document.getElementById('main-date-input').value);
         await syncWeeklyMatrix();
     }
@@ -787,7 +707,7 @@
         const range = getWeekRange(editorAnchorDate);
         document.getElementById('week-date-label').innerText = `${String(range[0].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[0].dateObj.getDate()).padStart(2,'0')} ~ ${String(range[4].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[4].dateObj.getDate()).padStart(2,'0')}`;
 
-        const g = getCurrentGrade();
+        const g = document.getElementById('grade-select').value;
         const c = document.getElementById('class-select').value;
         weekDataBuffer = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
 
@@ -919,7 +839,7 @@
         document.getElementById('moving-pool-wrapper').style.display = 'flex';
         poolGrid.innerHTML = '<div class="loading" style="grid-column: span 3;">과목 리스트 동기화 중...</div>';
 
-        const g = getCurrentGrade();
+        const g = document.getElementById('grade-select').value;
         try {
             const res = await fetchNeis(SCHOOL_TYPE, {
                 Type: 'json',
@@ -981,13 +901,6 @@
         refresh();
     }
 
-    const DEFAULT_SCHEDULE_CONFIG = {
-        firstStart: '09:00',
-        periodDuration: 50,
-        breakDuration: 10,
-        lunchDuration: 50
-    };
-
     function buildPaletteUI() {
         const box = document.getElementById('palette-matrix');
         let html = '';
@@ -996,129 +909,6 @@
         }
         html += `<div class="color-item" data-id="none" style="background:var(--sub-none);" onclick="pickColorTheme('none')"></div>`;
         box.innerHTML = html;
-    }
-
-    function loadScheduleConfig() {
-        try {
-            const stored = localStorage.getItem('SCHEDULE_CONFIG');
-            return stored ? JSON.parse(stored) : { ...DEFAULT_SCHEDULE_CONFIG };
-        } catch (e) {
-            return { ...DEFAULT_SCHEDULE_CONFIG };
-        }
-    }
-
-    function saveScheduleSettings() {
-        const config = {
-            firstStart: document.getElementById('schedule-first-start').value || DEFAULT_SCHEDULE_CONFIG.firstStart,
-            periodDuration: Number(document.getElementById('schedule-period-duration').value) || DEFAULT_SCHEDULE_CONFIG.periodDuration,
-            breakDuration: Number(document.getElementById('schedule-break-duration').value) || DEFAULT_SCHEDULE_CONFIG.breakDuration,
-            lunchDuration: Number(document.getElementById('schedule-lunch-duration').value) || DEFAULT_SCHEDULE_CONFIG.lunchDuration
-        };
-        localStorage.setItem('SCHEDULE_CONFIG', JSON.stringify(config));
-        renderScheduleSettings();
-        refresh();
-        computeLiveTimeline();
-    }
-
-    function renderScheduleSettings() {
-        const config = loadScheduleConfig();
-        document.getElementById('schedule-first-start').value = config.firstStart;
-        document.getElementById('schedule-period-duration').value = config.periodDuration;
-        document.getElementById('schedule-break-duration').value = config.breakDuration;
-        document.getElementById('schedule-lunch-duration').value = config.lunchDuration;
-    }
-
-    function generateSchoolTimeline() {
-        const config = loadScheduleConfig();
-        const parseTime = value => {
-            const [h, m] = String(value).split(':').map(Number);
-            return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : parseTime(DEFAULT_SCHEDULE_CONFIG.firstStart);
-        };
-        const timeline = [];
-        let current = parseTime(config.firstStart);
-
-        for (let period = 1; period <= 7; period++) {
-            const periodStart = current;
-            const periodEnd = periodStart + config.periodDuration;
-            timeline.push({ p: period, start: periodStart, end: periodEnd, name: `${period}교시` });
-            current = periodEnd;
-
-            if (period === 4) {
-                timeline.push({ p: 'lunch', start: current, end: current + config.lunchDuration, name: '점심시간' });
-                current += config.lunchDuration;
-            } else if (period < 7) {
-                timeline.push({ p: `b${period}`, start: current, end: current + config.breakDuration, name: '쉬는시간' });
-                current += config.breakDuration;
-            }
-        }
-
-        return timeline;
-    }
-
-    function openCustomDatePicker() {
-        const overlay = document.getElementById('datePickerOverlay');
-        overlay.classList.add('active');
-        const currentValue = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
-        const [year, month] = currentValue.split('-').map(Number);
-        renderCalendarMonth(year, month);
-    }
-
-    function closeCustomDatePicker() {
-        document.getElementById('datePickerOverlay').classList.remove('active');
-    }
-
-    function renderCalendarMonth(year, month) {
-        const grid = document.getElementById('calendar-grid');
-        const label = document.getElementById('calendar-month-label');
-        const today = new Date();
-        const selected = document.getElementById('main-date-input').value || today.toISOString().slice(0,10);
-
-        const firstDay = new Date(year, month - 1, 1);
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const startWeekday = firstDay.getDay();
-        const selectedDateKey = `${year}-${String(month).padStart(2, '0')}`;
-
-        label.textContent = `${year}년 ${month}월`;
-        grid.innerHTML = '';
-
-        ['일', '월', '화', '수', '목', '금', '토'].forEach(dayName => {
-            const title = document.createElement('div');
-            title.className = 'calendar-day-name';
-            title.textContent = dayName;
-            grid.appendChild(title);
-        });
-
-        for (let i = 0; i < startWeekday; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'calendar-day calendar-day-empty';
-            grid.appendChild(empty);
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const cell = document.createElement('button');
-            cell.type = 'button';
-            cell.className = 'calendar-day';
-            if (selected === dateKey) cell.classList.add('active');
-            if (today.getFullYear() === year && today.getMonth() + 1 === month && today.getDate() === day) {
-                cell.style.boxShadow = 'inset 0 0 0 1px rgba(49,130,246,0.2)';
-            }
-            cell.textContent = day;
-            cell.onclick = () => {
-                document.getElementById('main-date-input').value = dateKey;
-                document.getElementById('meta-date-label').innerText = `${month}월 ${day}일 ${['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][new Date(dateKey).getDay()]}`;
-                closeCustomDatePicker();
-                refresh();
-            };
-            grid.appendChild(cell);
-        }
-    }
-
-    function changeCalendarMonth(delta) {
-        const current = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
-        const [year, month] = current.split('-').map(Number);
-        const newDate = new Date(year, month - 1 + delta, 1);
-        renderCalendarMonth(newDate.getFullYear(), newDate.getMonth() + 1);
     }
 
     function pickColorTheme(cid) {
@@ -1160,7 +950,22 @@
         const day = now.getDay();
         const apiStr = document.getElementById('main-date-input').value.replace(/-/g, '');
         
-        const timeline = generateSchoolTimeline();
+        // 타임라인 (시작분, 종료분)
+        const timeline = [
+            { p: 1, start: 540, end: 590, name: '1교시' },
+            { p: 'b1', start: 590, end: 600, name: '쉬는시간' },
+            { p: 2, start: 600, end: 650, name: '2교시' },
+            { p: 'b2', start: 650, end: 660, name: '쉬는시간' },
+            { p: 3, start: 660, end: 710, name: '3교시' },
+            { p: 'b3', start: 710, end: 720, name: '쉬는시간' },
+            { p: 4, start: 720, end: 770, name: '4교시' },
+            { p: 'lunch', start: 770, end: 820, name: '점심시간' },
+            { p: 5, start: 820, end: 870, name: '5교시' },
+            { p: 'b5', start: 870, end: 880, name: '쉬는시간' },
+            { p: 6, start: 880, end: 930, name: '6교시' },
+            { p: 'b6', start: 930, end: 940, name: '쉬는시간' },
+            { p: 7, start: 940, end: 990, name: '7교시' }
+        ];
         
         function timeStr(mins) {
             return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
@@ -1171,7 +976,7 @@
             const row = rows.find(r => parseInt(r.PERIO) === pNum);
             let subName = row ? row.ITRT_CNTNT.trim() : "";
             
-            const g = getCurrentGrade();
+            const g = document.getElementById('grade-select').value;
             const c = document.getElementById('class-select').value;
             const movingKey = `${c}-${subName}`;
             const movingData = MAP_MOVING_POOL[movingKey];
@@ -1317,21 +1122,17 @@
     }
 
     async function refresh() {
-        let rawDate = document.getElementById('main-date-input').value;
-        const mainDateInput = document.getElementById('main-date-input');
-        const now = new Date();
-        const defaultDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        if (!rawDate || Number.isNaN(new Date(rawDate).getTime())) {
-            rawDate = defaultDate;
-            mainDateInput.value = defaultDate;
-        }
+        const rawDate = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
         const apiStr = rawDate.replace(/-/g, '');
-        const dObj = new Date(rawDate);
+        const dObj = new Date(rawDate + 'T00:00:00');
         
         const dayLabels = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-        document.getElementById('meta-date-label').innerHTML = `${dObj.getMonth()+1}월 ${dObj.getDate()}일 ${dayLabels[dObj.getDay()]}`;
+        const displayMonth = dObj.getMonth()+1;
+        const displayDate = dObj.getDate();
+        const displayDay = dayLabels[dObj.getDay()];
+        document.getElementById('meta-date-label').innerHTML = `${displayMonth}월 ${displayDate}일 ${displayDay}`;
 
-        const g = getCurrentGrade();
+        const g = document.getElementById('grade-select').value;
         const c = document.getElementById('class-select').value;
 
         const timeBox = document.getElementById('render-timetable');
@@ -1347,8 +1148,9 @@
                 CLASS_NM: c
             });
             
-            if(res[SCHOOL_TYPE]) {
-                globalTodayRows = res[SCHOOL_TYPE][1].row;
+            if(res[SCHOOL_TYPE] && res[SCHOOL_TYPE][1] && res[SCHOOL_TYPE][1].row) {
+                let rows = res[SCHOOL_TYPE][1].row;
+                globalTodayRows = Array.isArray(rows) ? rows : [rows];
                 globalTodayRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
                 
                 let html = '<ul class="timetable-list">';
@@ -1373,8 +1175,15 @@
                 });
                 html += '</ul>';
                 timeBox.innerHTML = html;
-            } else { timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>'; globalTodayRows = []; }
-        } catch(e) { timeBox.innerHTML = '<div class="empty">시간표 수집 실패</div>'; globalTodayRows = []; }
+            } else { 
+                timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>'; 
+                globalTodayRows = []; 
+            }
+        } catch(e) { 
+            console.error('시간표 오류:', e);
+            timeBox.innerHTML = '<div class="empty">시간표 수집 실패</div>'; 
+            globalTodayRows = []; 
+        }
 
         const mealBox = document.getElementById('render-meal');
         mealBox.innerHTML = '<div class="loading">...</div>';
@@ -1385,13 +1194,24 @@
                 SD_SCHUL_CODE: SCHUL_CODE,
                 MLSV_YMD: apiStr
             });
-            if(res.mealServiceDietInfo) {
-                let dish = res.mealServiceDietInfo[1].row[0].DDISH_NM;
+            if(res.mealServiceDietInfo && res.mealServiceDietInfo[1] && res.mealServiceDietInfo[1].row) {
+                let rows = res.mealServiceDietInfo[1].row;
+                let row = Array.isArray(rows) ? rows[0] : rows;
+                let dish = row.DDISH_NM;
                 let clean = dish.replace(/<br\s*\/?>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
                 globalMealLines = clean.split('\n').map(l => l.trim()).filter(l => l);
-                mealBox.innerHTML = globalMealLines.map(l => `<div class="meal-item">${l}</div>`).join('');
-            } else { mealBox.innerHTML = '<div class="empty">급식 없음</div>'; globalMealLines = []; }
-        } catch(e) { mealBox.innerHTML = '<div class="empty">식단 수집 실패</div>'; globalMealLines = []; }
+                mealBox.innerHTML = globalMealLines.length > 0 
+                    ? globalMealLines.map(l => `<div class="meal-item">${l}</div>`).join('')
+                    : '<div class="empty">급식 없음</div>';
+            } else { 
+                mealBox.innerHTML = '<div class="empty">급식 없음</div>'; 
+                globalMealLines = []; 
+            }
+        } catch(e) { 
+            console.error('급식 오류:', e);
+            mealBox.innerHTML = '<div class="empty">식단 수집 실패</div>'; 
+            globalMealLines = []; 
+        }
 
         // 내일 시간표 & 급식 미리 로드
         loadTomorrowData(g, c);
@@ -1414,13 +1234,15 @@
                 GRADE: g,
                 CLASS_NM: c
             });
-            if(ttRes[SCHOOL_TYPE]) {
-                globalTomorrowRows = ttRes[SCHOOL_TYPE][1].row;
+            if(ttRes[SCHOOL_TYPE] && ttRes[SCHOOL_TYPE][1] && ttRes[SCHOOL_TYPE][1].row) {
+                let rows = ttRes[SCHOOL_TYPE][1].row;
+                globalTomorrowRows = Array.isArray(rows) ? rows : [rows];
                 globalTomorrowRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
             } else {
                 globalTomorrowRows = [];
             }
         } catch(e) {
+            console.error('내일 시간표 오류:', e);
             globalTomorrowRows = [];
         }
         
@@ -1432,14 +1254,17 @@
                 SD_SCHUL_CODE: SCHUL_CODE,
                 MLSV_YMD: tomorrowDateStr
             });
-            if(mealRes.mealServiceDietInfo) {
-                let dish = mealRes.mealServiceDietInfo[1].row[0].DDISH_NM;
+            if(mealRes.mealServiceDietInfo && mealRes.mealServiceDietInfo[1] && mealRes.mealServiceDietInfo[1].row) {
+                let rows = mealRes.mealServiceDietInfo[1].row;
+                let row = Array.isArray(rows) ? rows[0] : rows;
+                let dish = row.DDISH_NM;
                 let clean = dish.replace(/<br\s*\/?>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
                 globalTomorrowMealLines = clean.split('\n').map(l => l.trim()).filter(l => l);
             } else {
                 globalTomorrowMealLines = [];
             }
         } catch(e) {
+            console.error('내일 급식 오류:', e);
             globalTomorrowMealLines = [];
         }
     }
@@ -1488,8 +1313,8 @@
         document.getElementById('meta-school-name').innerText = name;
         closeSearchSheet();
         loadSettings();
+        updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
         buildPaletteUI();
-        document.getElementById('onboarding-overlay').classList.remove('hidden');
         showClassSelection();
     }
 
