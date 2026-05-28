@@ -330,13 +330,6 @@
             </label>
         </div>
         <div class="menu-row">
-            <span>학년</span>
-            <select id="grade-select" onchange="handleGradeSidebarChange(this.value)">
-                <option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option>
-                <option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option>
-            </select>
-        </div>
-        <div class="menu-row">
             <span>반</span>
             <select id="class-select" onchange="saveGradeClass()">
                 <script>for(let i=1; i<=15; i++) document.write(`<option value="${i}">${i}반</option>`);</script>
@@ -585,7 +578,6 @@
     async function onboardingPickGrade(grade) {
         onboardingSelectedGrade = grade;
         localStorage.setItem('G_VAL', grade);
-        document.getElementById('grade-select').value = grade;
         document.getElementById('onboarding-title').innerText = '반을 선택하세요';
         document.getElementById('onboarding-desc').innerText = '선택 가능한 반을 자동으로 확인합니다.';
         const placeholder = document.getElementById('onboarding-class-placeholder');
@@ -645,6 +637,10 @@
         return 15;
     }
 
+    function getCurrentGrade() {
+        return localStorage.getItem('G_VAL') || '1';
+    }
+
     async function populateClassSelect(grade, selectedClass = null) {
         const select = document.getElementById('class-select');
         select.innerHTML = '<option value="">불러오는 중...</option>';
@@ -664,15 +660,8 @@
         }
     }
 
-    async function handleGradeSidebarChange(grade) {
-        await populateClassSelect(grade);
-        saveGradeClass();
-    }
-
     function saveGradeClass() {
-        const grade = document.getElementById('grade-select').value;
         const classNm = document.getElementById('class-select').value || '1';
-        localStorage.setItem('G_VAL', grade);
         localStorage.setItem('CLASS_NM', classNm);
         CLASS_NM = classNm;
         document.getElementById('class-select').value = classNm;
@@ -682,8 +671,7 @@
     async function onboardingPickClass(classNm) {
         CLASS_NM = classNm;
         localStorage.setItem('CLASS_NM', classNm);
-        document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
-        await populateClassSelect(document.getElementById('grade-select').value, classNm);
+        await populateClassSelect(getCurrentGrade(), classNm);
         document.getElementById('class-select').value = classNm;
         closeOnboarding();
     }
@@ -737,8 +725,7 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
-        const savedGrade = localStorage.getItem('G_VAL') || '3';
-        document.getElementById('grade-select').value = savedGrade;
+        const savedGrade = getCurrentGrade();
         await populateClassSelect(savedGrade, CLASS_NM);
 
         buildPaletteUI();
@@ -800,7 +787,7 @@
         const range = getWeekRange(editorAnchorDate);
         document.getElementById('week-date-label').innerText = `${String(range[0].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[0].dateObj.getDate()).padStart(2,'0')} ~ ${String(range[4].dateObj.getMonth()+1).padStart(2,'0')}.${String(range[4].dateObj.getDate()).padStart(2,'0')}`;
 
-        const g = document.getElementById('grade-select').value;
+        const g = getCurrentGrade();
         const c = document.getElementById('class-select').value;
         weekDataBuffer = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
 
@@ -932,7 +919,7 @@
         document.getElementById('moving-pool-wrapper').style.display = 'flex';
         poolGrid.innerHTML = '<div class="loading" style="grid-column: span 3;">과목 리스트 동기화 중...</div>';
 
-        const g = document.getElementById('grade-select').value;
+        const g = getCurrentGrade();
         try {
             const res = await fetchNeis(SCHOOL_TYPE, {
                 Type: 'json',
@@ -1184,7 +1171,7 @@
             const row = rows.find(r => parseInt(r.PERIO) === pNum);
             let subName = row ? row.ITRT_CNTNT.trim() : "";
             
-            const g = document.getElementById('grade-select').value;
+            const g = getCurrentGrade();
             const c = document.getElementById('class-select').value;
             const movingKey = `${c}-${subName}`;
             const movingData = MAP_MOVING_POOL[movingKey];
@@ -1344,7 +1331,7 @@
         const dayLabels = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
         document.getElementById('meta-date-label').innerHTML = `${dObj.getMonth()+1}월 ${dObj.getDate()}일 ${dayLabels[dObj.getDay()]}`;
 
-        const g = document.getElementById('grade-select').value;
+        const g = getCurrentGrade();
         const c = document.getElementById('class-select').value;
 
         const timeBox = document.getElementById('render-timetable');
