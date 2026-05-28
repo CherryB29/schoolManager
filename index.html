@@ -166,7 +166,7 @@
         .grid-matrix { display: grid; grid-template-columns: 32px repeat(5, minmax(0, 1fr)); gap: 3px; }
         .grid-lbl { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 6px 0; }
         
-        .grid-cell { background: var(--card-bg); border-radius: 6px; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; text-align: center; cursor: pointer; font-size: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.1s; min-width: 0; flex-wrap: wrap; }
+        .grid-cell { background: var(--card-bg); border-radius: 2px; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; text-align: center; cursor: pointer; font-size: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.1s; min-width: 0; flex-wrap: wrap; }
         .grid-cell:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .grid-cell b { display: block; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; line-height: 1.2; }
         .grid-cell.p-idx { background: none; box-shadow: none; color: var(--text-secondary); font-weight: 700; cursor: default; font-size: 9px; }
@@ -209,6 +209,7 @@
         
         /* Onboarding Modal */
         .onboarding-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); opacity: 1; visibility: visible; transition: 0.3s; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; }
+        .onboarding-overlay.class-select { z-index: 10000; }
         .onboarding-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
         .onboarding-card h2 { font-size: 22px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); }
@@ -248,6 +249,12 @@
         .search-container button { padding: 0 16px; background: var(--accent-blue); border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
         .bottom-sheet { position: fixed; bottom: -460px; left: 0; width: 100%; max-height: calc(100vh - 80px); background: var(--card-bg); border-top-left-radius: 22px; border-top-right-radius: 22px; z-index: 3001; transition: bottom 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
         #searchSheet { height: auto; max-height: calc(100vh - 80px); }
+        
+        /* 시간 설정 UI */
+        .schedule-settings { border-top: 1px solid var(--divider); margin-top: 16px; padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .schedule-setting-row { display: flex; flex-direction: column; gap: 4px; }
+        .schedule-setting-row label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; }
+        .schedule-setting-row input { padding: 8px 10px; border: 1px solid var(--divider); border-radius: 8px; background: var(--bg-color); color: var(--text-main); font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -324,6 +331,24 @@
         <button class="icon-btn" onclick="closeEditorSheet()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
     </div>
     <div class="sheet-body" id="editor-grid-container"></div>
+    <div class="schedule-settings">
+        <div class="schedule-setting-row">
+            <label>1교시 시작 시간</label>
+            <input type="time" id="start-time" value="09:00" onchange="updateScheduleSettings()">
+        </div>
+        <div class="schedule-setting-row">
+            <label>수업 시간 (분)</label>
+            <input type="number" id="class-duration" value="50" min="30" max="60" onchange="updateScheduleSettings()">
+        </div>
+        <div class="schedule-setting-row">
+            <label>쉬는시간 (분)</label>
+            <input type="number" id="break-duration" value="10" min="5" max="20" onchange="updateScheduleSettings()">
+        </div>
+        <div class="schedule-setting-row">
+            <label>점심시간 (분)</label>
+            <input type="number" id="lunch-duration" value="60" min="40" max="90" onchange="updateScheduleSettings()">
+        </div>
+    </div>
 </div>
 
 <div class="bottom-sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
@@ -342,6 +367,15 @@
     <div class="moving-pool-section" id="moving-pool-wrapper" style="display:none;">
         <div class="moving-pool-title">개설된 분반 선택</div>
         <div class="moving-grid-scroll" id="moving-pool-grid"></div>
+    </div>
+</div>
+
+<!-- 반 선택 팝업 모달 -->
+<div class="onboarding-overlay" id="classSelectModal" style="display: none; z-index: 10000;">
+    <div class="onboarding-card">
+        <h2>반을 선택하세요</h2>
+        <p>선택 가능한 반을 자동으로 확인합니다.</p>
+        <div id="classSelectContent" class="onboarding-grid" style="max-height: 300px; overflow-y: auto;"><div class="loading">로딩 중...</div></div>
     </div>
 </div>
 
@@ -509,13 +543,38 @@
         onboardingSelectedGrade = grade;
         localStorage.setItem('G_VAL', grade);
         document.getElementById('grade-select').value = grade;
-        document.getElementById('onboarding-title').innerText = '반을 선택하세요';
-        document.getElementById('onboarding-desc').innerText = '선택 가능한 반을 자동으로 확인합니다.';
-        const placeholder = document.getElementById('onboarding-class-placeholder');
-        placeholder.innerHTML = '<div class="loading">반 번호를 확인 중입니다...</div>';
+        
+        // 별도 팝업으로 반 선택 띄우기
+        showClassSelectModal(grade);
+    }
+
+    async function showClassSelectModal(grade) {
+        const modal = document.getElementById('classSelectModal');
+        const content = document.getElementById('classSelectContent');
+        modal.style.display = 'flex';
+        content.innerHTML = '<div class="loading">반 번호를 확인 중입니다...</div>';
 
         const classNumbers = await fetchGradeClassNumbers(grade);
-        renderOnboardingClassButtons(classNumbers);
+        renderClassSelectButtons(classNumbers);
+    }
+
+    function renderClassSelectButtons(classNumbers) {
+        const content = document.getElementById('classSelectContent');
+        if(!classNumbers || classNumbers.length === 0) {
+            const maxClass = getDefaultClassCountBySchoolType();
+            classNumbers = Array.from({ length: maxClass }, (_, i) => i + 1);
+        }
+
+        let html = '';
+        classNumbers.forEach(num => {
+            html += `<button class="onboarding-result-item" onclick="selectClassFromModal('${num}')">${num}반</button>`;
+        });
+        content.innerHTML = html;
+    }
+
+    function selectClassFromModal(classNm) {
+        onboardingPickClass(classNm);
+        document.getElementById('classSelectModal').style.display = 'none';
     }
 
     function renderOnboardingClassButtons(classNumbers) {
@@ -959,12 +1018,12 @@
             { p: 3, start: 660, end: 710, name: '3교시' },
             { p: 'b3', start: 710, end: 720, name: '쉬는시간' },
             { p: 4, start: 720, end: 770, name: '4교시' },
-            { p: 'lunch', start: 770, end: 820, name: '점심시간' },
-            { p: 5, start: 820, end: 870, name: '5교시' },
-            { p: 'b5', start: 870, end: 880, name: '쉬는시간' },
-            { p: 6, start: 880, end: 930, name: '6교시' },
-            { p: 'b6', start: 930, end: 940, name: '쉬는시간' },
-            { p: 7, start: 940, end: 990, name: '7교시' }
+            { p: 'lunch', start: 770, end: 830, name: '점심시간' },
+            { p: 5, start: 830, end: 880, name: '5교시' },
+            { p: 'b5', start: 880, end: 890, name: '쉬는시간' },
+            { p: 6, start: 890, end: 940, name: '6교시' },
+            { p: 'b6', start: 940, end: 950, name: '쉬는시간' },
+            { p: 7, start: 950, end: 1000, name: '7교시' }
         ];
         
         function timeStr(mins) {
@@ -1002,8 +1061,10 @@
                         <span class="now-remaining">${getSubject(1, globalTodayRows)}</span>
                     </div>
                 </div>`;
-            } else if (totalMins >= 990) {
+            } else if (totalMins >= 1000) {
                 // 학교 끝난 후
+                const firstPeriodStart = timeline.find(t => t.p === 1)?.start || 540;
+                const firstPeriodEnd = timeline.find(t => t.p === 1)?.end || 590;
                 html = `<div class="now-main">
                     <div class="now-time-label">학교 종료</div>
                     <div class="now-title">오늘 일정 완료</div>
@@ -1012,7 +1073,7 @@
                 <div class="now-section next-event">
                     <div class="now-lbl">내일의 첫 수업</div>
                     <div class="now-val subject">${getSubject(1, globalTomorrowRows)}</div>
-                    <div class="now-val">1교시 09:00 ~ 09:50</div>
+                    <div class="now-val">1교시 ${timeStr(firstPeriodStart)} ~ ${timeStr(firstPeriodEnd)}</div>
                 </div>`;
             } else if (found) {
                 const remaining = found.end - totalMins;
@@ -1042,20 +1103,21 @@
                     // 점심시간
                     const meals = globalMealLines.join(', ');
                     const nextSubject = getSubject(5, globalTodayRows);
+                    const nextStartTime = timeline.find(t => t.p === 5)?.start || 830;
                     
                     html = `<div class="now-main">
                         <div class="now-time-label">점심시간</div>
                         <div class="now-subtitle">오늘의 급식</div>
                         <div class="now-val meal-summary">${meals || '급식 정보 없음'}</div>
                         <div class="now-time-info">
-                            <span>${timeStr(770)} ~ ${timeStr(820)}</span>
+                            <span>${timeStr(770)} ~ ${timeStr(830)}</span>
                             <span class="now-remaining">${remaining}분 남음</span>
                         </div>
                     </div>
                     <div class="now-section next-event">
                         <div class="now-lbl">다음 시간</div>
                         <div class="now-val subject">${nextSubject}</div>
-                        <div class="now-val">5교시 13:40</div>
+                        <div class="now-val">5교시 ${timeStr(nextStartTime)}</div>
                     </div>`;
                 } else if (String(found.p).startsWith('b')) {
                     // 쉬는시간
@@ -1279,6 +1341,15 @@
         document.getElementById('searchSheetOverlay').classList.remove('active');
         document.getElementById('searchSheet').classList.remove('active');
         document.getElementById('searchSheet').style.bottom = '-500px';
+    }
+
+    function updateScheduleSettings() {
+        const startTime = document.getElementById('start-time').value;
+        const classDuration = document.getElementById('class-duration').value;
+        const breakDuration = document.getElementById('break-duration').value;
+        const lunchDuration = document.getElementById('lunch-duration').value;
+        
+        console.log('스케줄 설정:', { startTime, classDuration, breakDuration, lunchDuration });
     }
     async function executeSchoolSearch() {
         const word = document.getElementById('query-input').value.trim();
