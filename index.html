@@ -214,6 +214,20 @@
         .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
         .onboarding-card h2 { font-size: 22px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); }
         .onboarding-card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.6; font-weight: 500; }
+        .calendar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10002; display: none; align-items: center; justify-content: center; padding: 16px; }
+        .calendar-overlay.active { display: flex; }
+        .calendar-modal { width: min(420px,100%); background: var(--card-bg); border-radius: 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; }
+        .calendar-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 12px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
+        .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .calendar-nav { display: flex; gap: 10px; }
+        .calendar-nav button { border: none; background: var(--bg-color); color: var(--text-main); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 16px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 18px 18px; }
+        .calendar-day-label, .calendar-day { text-align: center; font-size: 13px; }
+        .calendar-day-label { color: var(--text-secondary); padding: 10px 0; }
+        .calendar-day { min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; color: var(--text-main); background: var(--bg-color); border: 1px solid transparent; }
+        .calendar-day:hover { background: rgba(49,130,246,0.08); }
+        .calendar-day.selected { background: var(--accent-blue); color: white; border-color: transparent; }
+        .calendar-day.disabled { color: var(--text-secondary); cursor: default; background: transparent; }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -251,10 +265,17 @@
         #searchSheet { height: auto; max-height: calc(100vh - 80px); }
         
         /* 시간 설정 UI */
-        .schedule-settings { border-top: 1px solid var(--divider); margin-top: 16px; padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .schedule-settings { border-top: 1px solid var(--divider); margin-top: 16px; padding: 16px 18px 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .schedule-setting-row { display: flex; flex-direction: column; gap: 4px; }
         .schedule-setting-row label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; }
-        .schedule-setting-row input { padding: 8px 10px; border: 1px solid var(--divider); border-radius: 8px; background: var(--bg-color); color: var(--text-main); font-size: 12px; font-weight: 600; }
+        .schedule-setting-row input { padding: 10px 12px; border: 1px solid var(--divider); border-radius: 12px; background: var(--bg-color); color: var(--text-main); font-size: 13px; font-weight: 600; }
+        .schedule-settings input[type="number"] { width: 100%; }
+        
+        .calendar-day { min-height: 46px; border: 1px solid transparent; background: var(--bg-color); border-radius: 12px; cursor: pointer; padding: 0; font-weight: 600; }
+        .calendar-day:hover { background: rgba(49,130,246,0.12); }
+        .calendar-day.selected { background: var(--accent-blue); color: white; }
+        .calendar-day.disabled { cursor: default; background: transparent; border: none; }
+
     </style>
 </head>
 <body>
@@ -272,6 +293,28 @@
             <div class="onboarding-results" id="onboarding-results"></div>
         </div>
     </div>
+</div>
+
+<div class="calendar-overlay" id="calendarOverlay" onclick="closeCalendar(event)">
+    <div class="calendar-modal" onclick="event.stopPropagation()">
+        <div class="calendar-header">
+            <div class="calendar-month" id="calendarMonthLabel">2024년 1월</div>
+            <div class="calendar-nav">
+                <button onclick="changeCalendarMonth(-1)">&lt;</button>
+                <button onclick="changeCalendarMonth(1)">&gt;</button>
+            </div>
+        </div>
+        <div class="calendar-grid" id="calendarDaysContainer">
+            <div class="calendar-day-label">일</div>
+            <div class="calendar-day-label">월</div>
+            <div class="calendar-day-label">화</div>
+            <div class="calendar-day-label">수</div>
+            <div class="calendar-day-label">목</div>
+            <div class="calendar-day-label">금</div>
+            <div class="calendar-day-label">토</div>
+        </div>
+    </div>
+</div>
 </div>
 
 <nav class="nav-bar">
@@ -295,7 +338,7 @@
         </div>
         <div class="menu-row">
             <span>학년</span>
-            <select id="grade-select" onchange="saveGradeClass()">
+            <select id="grade-select" onchange="onSidebarGradeChange()">
                 <option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option>
                 <option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option>
             </select>
@@ -390,11 +433,11 @@
 </div>
 
 <main>
-    <div class="date-picker-wrapper" onclick="document.getElementById('main-date-input').showPicker()" title="날짜를 눌러 변경하세요">
+    <div class="date-picker-wrapper" onclick="openCalendar()" title="날짜를 눌러 변경하세요">
         <div class="school-badge" id="meta-school-name">-</div>
         <div class="date-display" id="meta-date-label">로딩 중...</div>
         <div class="date-hint">날짜를 눌러 변경</div>
-        <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()">
+        <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()" style="display:none;">
     </div>
 
     <div class="dashboard-grid">
@@ -655,18 +698,42 @@
         refresh();
     }
 
-    function updateClassOptions() {
+    async function fetchAndRenderClassOptions(grade) {
         const classSelect = document.getElementById('class-select');
-        const maxClass = getDefaultClassCountBySchoolType();
-        classSelect.innerHTML = '';
-        for(let i=1; i<=maxClass; i++) {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.innerText = i + '반';
-            classSelect.appendChild(opt);
+        classSelect.innerHTML = '<option>불러오는 중...</option>';
+        let classNumbers = await fetchGradeClassNumbers(grade);
+        if(!classNumbers || classNumbers.length === 0) {
+            const maxClass = getDefaultClassCountBySchoolType();
+            classNumbers = Array.from({ length: maxClass }, (_, i) => String(i + 1));
         }
-        // 현재 저장된 반이 있으면 선택
-        if(CLASS_NM) classSelect.value = CLASS_NM;
+        classSelect.innerHTML = '';
+        classNumbers.forEach(num => {
+            const opt = document.createElement('option');
+            opt.value = num;
+            opt.innerText = num + '반';
+            classSelect.appendChild(opt);
+        });
+        if(CLASS_NM && classNumbers.includes(CLASS_NM)) {
+            classSelect.value = CLASS_NM;
+        } else {
+            classSelect.value = classNumbers[0] || '1';
+            CLASS_NM = classSelect.value;
+        }
+    }
+
+    function updateClassOptions() {
+        const grade = document.getElementById('grade-select').value;
+        fetchAndRenderClassOptions(grade);
+    }
+
+    async function onSidebarGradeChange() {
+        const grade = document.getElementById('grade-select').value;
+        localStorage.setItem('G_VAL', grade);
+        await fetchAndRenderClassOptions(grade);
+        const classNm = document.getElementById('class-select').value;
+        localStorage.setItem('CLASS_NM', classNm);
+        CLASS_NM = classNm;
+        refresh();
     }
 
     function saveGradeClass() {
@@ -679,7 +746,7 @@
     }
 
 
-    function init() {
+    async function init() {
         // 테마 로드
         if ((localStorage.getItem('THEME') || 'light') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -701,8 +768,8 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
-        updateClassOptions();  // 반 옵션 동적 생성
         document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
+        await fetchAndRenderClassOptions(document.getElementById('grade-select').value);
         document.getElementById('class-select').value = CLASS_NM;
 
         const now = new Date();
@@ -712,6 +779,65 @@
         buildPaletteUI();
         refresh();
         setInterval(computeLiveTimeline, 1000);
+    }
+
+    let calendarCurrentDate = new Date();
+
+    function openCalendar() {
+        const input = document.getElementById('main-date-input');
+        calendarCurrentDate = input.value ? new Date(input.value + 'T00:00:00') : new Date();
+        buildCalendar(calendarCurrentDate);
+        document.getElementById('calendarOverlay').classList.add('active');
+    }
+
+    function closeCalendar(event) {
+        if (event && event.target.id !== 'calendarOverlay') return;
+        document.getElementById('calendarOverlay').classList.remove('active');
+    }
+
+    function changeCalendarMonth(delta) {
+        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+        buildCalendar(calendarCurrentDate);
+    }
+
+    function buildCalendar(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const monthLabel = document.getElementById('calendarMonthLabel');
+        monthLabel.textContent = `${year}년 ${month + 1}월`;
+
+        const firstDay = new Date(year, month, 1);
+        const startDay = firstDay.getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const container = document.getElementById('calendarDaysContainer');
+        container.innerHTML = '';
+
+        for (let i = 0; i < startDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-day disabled';
+            container.appendChild(empty);
+        }
+
+        const selectedValue = document.getElementById('main-date-input').value;
+        for (let day = 1; day <= daysInMonth; day++) {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'calendar-day';
+            const current = new Date(year, month, day);
+            const iso = current.toISOString().slice(0, 10);
+            item.textContent = day;
+            if (iso === selectedValue) item.classList.add('selected');
+            item.onclick = () => selectCalendarDate(current);
+            container.appendChild(item);
+        }
+    }
+
+    function selectCalendarDate(date) {
+        const input = document.getElementById('main-date-input');
+        const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        input.value = formatted;
+        closeCalendar({ target: document.getElementById('calendarOverlay') });
+        onMainDateChanged();
     }
 
     function onMainDateChanged() { refresh(); }
