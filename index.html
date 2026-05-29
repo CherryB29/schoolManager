@@ -947,6 +947,22 @@
         const container = document.getElementById('calendarDaysContainer');
         container.innerHTML = '';
 
+        const dayLabels = [
+            { label: '일', cls: 'sun' },
+            { label: '월', cls: '' },
+            { label: '화', cls: '' },
+            { label: '수', cls: '' },
+            { label: '목', cls: '' },
+            { label: '금', cls: '' },
+            { label: '토', cls: 'sat' }
+        ];
+        dayLabels.forEach(d => {
+            const label = document.createElement('div');
+            label.className = `calendar-day-label${d.cls ? ' ' + d.cls : ''}`;
+            label.textContent = d.label;
+            container.appendChild(label);
+        });
+
         for (let i = 0; i < startDay; i++) {
             const empty = document.createElement('div');
             empty.className = 'calendar-day disabled';
@@ -958,8 +974,8 @@
             const item = document.createElement('button');
             item.type = 'button';
             const current = new Date(year, month, day);
-            const isWeekendDay = current.getDay() === 0 || current.getDay() === 6;
-            item.className = `calendar-day${isWeekendDay ? ' weekend' : ''}`;
+            const dayClass = current.getDay() === 0 ? 'sun' : current.getDay() === 6 ? 'sat' : '';
+            item.className = `calendar-day${dayClass ? ' ' + dayClass : ''}`;
             const iso = current.toISOString().slice(0, 10);
             item.textContent = day;
             if (iso === selectedValue) item.classList.add('selected');
@@ -1308,23 +1324,26 @@
                 </div>`;
             } else if (totalMins >= timeline[timeline.length - 1].end) {
                 // 학교 끝난 후
-                const tomorrow = new Date(now);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                if (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) {
+                const nextSchoolDate = getNextSchoolDay(now);
+                if (!nextSchoolDate) {
                     html = `<div class="now-main">
                         <div class="now-time-label">학교 종료</div>
                         <div class="now-title">오늘 일정 완료</div>
-                        <div class="now-subtitle">내일은 주말입니다</div>
-                    </div>
-                    <div class="now-section next-event">
-                        <div class="now-lbl">내일 시간표</div>
-                        <div class="now-val">토요일과 일요일에는 내일 시간표를 표시하지 않습니다.</div>
+                        <div class="now-subtitle">다음 등교일 정보를 불러올 수 없습니다.</div>
                     </div>`;
                 } else {
+                    const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+                    const nextLabel = dayLabels[nextSchoolDate.getDay()];
+                    const month = nextSchoolDate.getMonth() + 1;
+                    const date = nextSchoolDate.getDate();
                     html = `<div class="now-main">
                         <div class="now-time-label">학교 종료</div>
                         <div class="now-title">오늘 일정 완료</div>
-                        <div class="now-subtitle">내일 시간표</div>
+                        <div class="now-subtitle">${month}월 ${date}일 ${nextLabel}요일 일정</div>
+                    </div>
+                    <div class="now-section next-event">
+                        <div class="now-lbl">다음 등교일 시간표</div>
+                        <div class="now-val">${month}월 ${date}일 ${nextLabel}요일의 시간표를 표시합니다.</div>
                     </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
                 }
             } else if (found) {
@@ -1401,10 +1420,10 @@
         
         function renderTomorrowSmallTimetable(rows) {
             if (!rows || rows.length === 0) {
-                return `<div class="now-section next-event"><div class="now-lbl">내일 시간표</div><div class="now-val">시간표 정보를 불러올 수 없습니다.</div></div>`;
+                return `<div class="now-section next-event"><div class="now-lbl">다음 등교일 시간표</div><div class="now-val">시간표 정보를 불러올 수 없습니다.</div></div>`;
             }
             const currentClass = document.getElementById('class-select').value;
-            let html = '<div class="now-section next-event"><div class="now-lbl">내일 시간표</div><ul class="now-timetable-sm">';
+            let html = '<div class="now-section next-event"><div class="now-lbl">다음 등교일 시간표</div><ul class="now-timetable-sm">';
             rows.forEach(r => {
                 const p = parseInt(r.PERIO, 10);
                 const subject = (r.ITRT_CNTNT || '').trim() || '공강';
@@ -1418,13 +1437,19 @@
         }
 
         function renderNonSchoolDay() {
+            const nextSchoolDate = getNextSchoolDay(now);
+            if (!nextSchoolDate) {
+                return `<div class="now-main"><div class="now-title">학사 일정 정보 없음</div></div>`;
+            }
             const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-            const todayLabel = dayLabels[now.getDay()];
+            const nextLabel = dayLabels[nextSchoolDate.getDay()];
+            const month = nextSchoolDate.getMonth() + 1;
+            const date = nextSchoolDate.getDate();
             return `<div class="now-main">
-                <div class="now-time-label">주말</div>
-                <div class="now-title" style="font-size:22px;">오늘은 ${todayLabel}요일입니다</div>
-                <div class="now-subtitle">토요일과 일요일에는 내일 시간표를 표시하지 않습니다.</div>
-            </div>`;
+                <div class="now-time-label">다음 등교일</div>
+                <div class="now-title" style="font-size:22px;">${month}월 ${date}일 ${nextLabel}요일</div>
+                <div class="now-subtitle">가장 가까운 다음 등교일 시간표입니다.</div>
+            </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
         }
         
         const isSchoolDay = day >= 1 && day <= 5;
@@ -1531,9 +1556,13 @@
     
     async function loadTomorrowData(g, c) {
         const now = new Date();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowDateStr = `${tomorrow.getFullYear()}${String(tomorrow.getMonth()+1).padStart(2,'0')}${String(tomorrow.getDate()).padStart(2,'0')}`;
+        const nextSchoolDate = getNextSchoolDay(now);
+        if (!nextSchoolDate) {
+            globalTomorrowRows = [];
+            globalTomorrowMealLines = [];
+            return;
+        }
+        const tomorrowDateStr = `${nextSchoolDate.getFullYear()}${String(nextSchoolDate.getMonth()+1).padStart(2,'0')}${String(nextSchoolDate.getDate()).padStart(2,'0')}`;
         
         try {
             // 내일 시간표
