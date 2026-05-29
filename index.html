@@ -481,7 +481,70 @@
     
     let MAP_COLORS = {}; 
     let MAP_MOVING_POOL = {};
+    let scheduleSettings = null;
     let onboardingSelectedGrade = null;
+
+    function getDefaultScheduleSettings() {
+        return {
+            startTime: '09:00',
+            classDuration: 50,
+            breakDuration: 10,
+            lunchDuration: 60
+        };
+    }
+
+    function loadScheduleSettings() {
+        if (!SCHUL_CODE) {
+            scheduleSettings = getDefaultScheduleSettings();
+            return;
+        }
+        scheduleSettings = JSON.parse(localStorage.getItem(`SCHEDULE_SETTINGS_${SCHUL_CODE}`)) || getDefaultScheduleSettings();
+        applyScheduleSettingsToInputs();
+    }
+
+    function saveScheduleSettings(settings) {
+        if (!SCHUL_CODE) return;
+        localStorage.setItem(`SCHEDULE_SETTINGS_${SCHUL_CODE}`, JSON.stringify(settings));
+        scheduleSettings = settings;
+    }
+
+    function applyScheduleSettingsToInputs() {
+        const settings = scheduleSettings || getDefaultScheduleSettings();
+        document.getElementById('start-time').value = settings.startTime;
+        document.getElementById('class-duration').value = settings.classDuration;
+        document.getElementById('break-duration').value = settings.breakDuration;
+        document.getElementById('lunch-duration').value = settings.lunchDuration;
+    }
+
+    function createTimelineFromSettings() {
+        const settings = scheduleSettings || getDefaultScheduleSettings();
+        const [hour, minute] = settings.startTime.split(':').map(Number);
+        let current = hour * 60 + minute;
+        const timeline = [];
+
+        for (let period = 1; period <= 4; period++) {
+            timeline.push({ p: period, start: current, end: current + settings.classDuration, name: `${period}교시` });
+            current += settings.classDuration;
+            if (period < 4) {
+                timeline.push({ p: `b${period}`, start: current, end: current + settings.breakDuration, name: '쉬는시간' });
+                current += settings.breakDuration;
+            } else {
+                timeline.push({ p: 'lunch', start: current, end: current + settings.lunchDuration, name: '점심시간' });
+                current += settings.lunchDuration;
+            }
+        }
+
+        for (let period = 5; period <= 7; period++) {
+            timeline.push({ p: period, start: current, end: current + settings.classDuration, name: `${period}교시` });
+            current += settings.classDuration;
+            if (period < 7) {
+                timeline.push({ p: `b${period}`, start: current, end: current + settings.breakDuration, name: '쉬는시간' });
+                current += settings.breakDuration;
+            }
+        }
+
+        return timeline;
+    }
 
     async function fetchNeis(urlPath, queryParams = {}) {
         const params = new URLSearchParams({ urlPath, ...queryParams });
@@ -523,6 +586,7 @@
     function loadSettings() {
         MAP_COLORS = JSON.parse(localStorage.getItem(`MAP_COLORS_${SCHUL_CODE}`)) || {};
         MAP_MOVING_POOL = JSON.parse(localStorage.getItem(`MAP_MOVING_POOL_${SCHUL_CODE}`)) || {};
+        loadScheduleSettings();
     }
 
     function saveSettings() {
@@ -562,10 +626,12 @@
         localStorage.setItem('ATPT_CODE', atpt);
         localStorage.setItem('SCHUL_CODE', schul);
         localStorage.setItem('SCHOOL_TYPE', type);
+        document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
         
         loadSettings();
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
         showClassSelection();
+        document.getElementById('onboarding-overlay').classList.remove('hidden');
     }
 
     function showClassSelection() {
@@ -678,11 +744,11 @@
         closeOnboarding();
     }
 
-    function closeOnboarding() {
+    async function closeOnboarding() {
         document.getElementById('onboarding-overlay').classList.add('hidden');
         localStorage.setItem('ONBOARDING_DONE', 'true');
-        updateClassOptions();  // 반 옵션 업데이트
-        refresh();
+        await updateClassOptions();  // 반 옵션 업데이트
+        await refresh();
         setInterval(computeLiveTimeline, 1000);
     }
 
@@ -721,9 +787,9 @@
         }
     }
 
-    function updateClassOptions() {
+    async function updateClassOptions() {
         const grade = document.getElementById('grade-select').value;
-        fetchAndRenderClassOptions(grade);
+        await fetchAndRenderClassOptions(grade);
     }
 
     async function onSidebarGradeChange() {
@@ -1134,23 +1200,7 @@
         const totalMins = now.getHours() * 60 + now.getMinutes();
         const day = now.getDay();
         const apiStr = document.getElementById('main-date-input').value.replace(/-/g, '');
-        
-        // 타임라인 (시작분, 종료분)
-        const timeline = [
-            { p: 1, start: 540, end: 590, name: '1교시' },
-            { p: 'b1', start: 590, end: 600, name: '쉬는시간' },
-            { p: 2, start: 600, end: 650, name: '2교시' },
-            { p: 'b2', start: 650, end: 660, name: '쉬는시간' },
-            { p: 3, start: 660, end: 710, name: '3교시' },
-            { p: 'b3', start: 710, end: 720, name: '쉬는시간' },
-            { p: 4, start: 720, end: 770, name: '4교시' },
-            { p: 'lunch', start: 770, end: 830, name: '점심시간' },
-            { p: 5, start: 830, end: 880, name: '5교시' },
-            { p: 'b5', start: 880, end: 890, name: '쉬는시간' },
-            { p: 6, start: 890, end: 940, name: '6교시' },
-            { p: 'b6', start: 940, end: 950, name: '쉬는시간' },
-            { p: 7, start: 950, end: 1000, name: '7교시' }
-        ];
+        const timeline = createTimelineFromSettings();
         
         function timeStr(mins) {
             return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
@@ -1229,6 +1279,7 @@
                     // 점심시간
                     const meals = globalMealLines.join(', ');
                     const nextSubject = getSubject(5, globalTodayRows);
+                    const lunchSegment = timeline.find(t => t.p === 'lunch');
                     const nextStartTime = timeline.find(t => t.p === 5)?.start || 830;
                     
                     html = `<div class="now-main">
@@ -1236,7 +1287,7 @@
                         <div class="now-subtitle">오늘의 급식</div>
                         <div class="now-val meal-summary">${meals || '급식 정보 없음'}</div>
                         <div class="now-time-info">
-                            <span>${timeStr(770)} ~ ${timeStr(830)}</span>
+                            <span>${timeStr(lunchSegment.start)} ~ ${timeStr(lunchSegment.end)}</span>
                             <span class="now-remaining">${remaining}분 남음</span>
                         </div>
                     </div>
@@ -1283,12 +1334,14 @@
             const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
             const dayLabel = dayLabels[nextDay.getDay()];
             
+            const tomorrowTimeline = createTimelineFromSettings();
+            const nextSegment = tomorrowTimeline.find(t => t.p === 1) || { start: 540, end: 590 };
             let html = `<div class="now-main">
                 <div class="now-time-label">다음 학교날</div>
                 <div class="now-title" style="font-size:22px;">${nextDay.getMonth()+1}월 ${nextDay.getDate()}일 ${dayLabel}요일</div>
                 <div class="now-subtitle">첫 수업: ${getSubject(1, globalTomorrowRows)}</div>
                 <div class="now-time-info" style="margin-top:8px;">
-                    <span>09:00 ~ 09:50</span>
+                    <span>${timeStr(nextSegment.start)} ~ ${timeStr(nextSegment.end)}</span>
                 </div>
             </div>`;
             
@@ -1471,11 +1524,18 @@
 
     function updateScheduleSettings() {
         const startTime = document.getElementById('start-time').value;
-        const classDuration = document.getElementById('class-duration').value;
-        const breakDuration = document.getElementById('break-duration').value;
-        const lunchDuration = document.getElementById('lunch-duration').value;
-        
-        console.log('스케줄 설정:', { startTime, classDuration, breakDuration, lunchDuration });
+        const classDuration = parseInt(document.getElementById('class-duration').value, 10);
+        const breakDuration = parseInt(document.getElementById('break-duration').value, 10);
+        const lunchDuration = parseInt(document.getElementById('lunch-duration').value, 10);
+        const settings = {
+            startTime,
+            classDuration: Number.isNaN(classDuration) ? 50 : classDuration,
+            breakDuration: Number.isNaN(breakDuration) ? 10 : breakDuration,
+            lunchDuration: Number.isNaN(lunchDuration) ? 60 : lunchDuration
+        };
+        saveScheduleSettings(settings);
+        computeLiveTimeline();
+        console.log('스케줄 설정 저장:', settings);
     }
     async function executeSchoolSearch() {
         const word = document.getElementById('query-input').value.trim();
@@ -1513,6 +1573,7 @@
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
         buildPaletteUI();
         showClassSelection();
+        document.getElementById('onboarding-overlay').classList.remove('hidden');
     }
 
     init();
