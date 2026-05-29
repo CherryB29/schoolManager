@@ -87,9 +87,9 @@
         .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
-        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; }
+        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
-        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 0.2px; }
+        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
         /* Cards Base Style */
@@ -105,8 +105,8 @@
         .now-main.is-critical { --accent-blue: #EF4444; }
         
         .now-time-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
-        .now-title { font-size: 28px; font-weight: 800; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.5px; }
-        .now-subtitle { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 12px; }
+        .now-title { font-size: 28px; font-weight: 800; color: var(--text-main); margin: 0 0 8px 0; letter-spacing: -0.5px; }
+        .now-subtitle { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.7; }
         .now-time-info { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 13px; font-weight: 600; color: var(--accent-blue); }
         .now-time-info.critical { color: #EF4444; }
         .now-remaining { display: inline-block; background: var(--bg-color); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
@@ -135,6 +135,8 @@
         /* Achromatic Minimal Moving Badge */
         .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
         .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
+        .meal-group { margin-bottom: 14px; border-radius: 16px; background: rgba(242, 244, 246, 0.9); padding: 14px 16px; border: 1px solid var(--divider); }
+        .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
 
         /* Sidebar Settings Layout */
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 1000; }
@@ -256,7 +258,7 @@
         .onboarding-result-item .school-name { font-size: 15px; font-weight: 800; color: var(--text-main); }
         .onboarding-result-item .school-address { font-size: 13px; font-weight: 500; color: var(--text-secondary); line-height: 1.4; word-break: break-word; }
         .onboarding-step-group { display: flex; flex-direction: column; gap: 12px; }
-        .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; width: 100%; }
+        .onboarding-grid { display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; }
         .onboarding-class-placeholder { width: 100%; }
         .onboarding-search,
         .search-container { flex-wrap: wrap; }
@@ -455,7 +457,6 @@
 <div class="onboarding-overlay" id="classSelectModal" style="display: none; z-index: 10000;">
     <div class="onboarding-card">
         <h2>반을 선택하세요</h2>
-        <p>선택 가능한 반을 자동으로 확인합니다.</p>
         <div id="classSelectContent" class="onboarding-grid" style="max-height: 300px; overflow-y: auto;"><div class="loading">로딩 중...</div></div>
     </div>
 </div>
@@ -464,8 +465,10 @@
 <div class="bottom-sheet" id="searchSheet" style="bottom: -500px; height: 440px;">
     <h4>학교 검색</h4>
     <div class="search-container">
-        <input type="text" id="query-input" placeholder="학교명 입력" onkeypress="if(event.key === 'Enter') executeSchoolSearch()">
-        <button onclick="executeSchoolSearch()">검색</button>
+        <div class="search-field">
+            <input type="text" id="query-input" placeholder="학교명 입력" autocomplete="off" oninput="debouncedSidebarSchoolSearch()" onkeypress="if(event.key === 'Enter') executeSchoolSearch()">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
     </div>
     <div id="query-results" class="list-results"></div>
 </div>
@@ -898,9 +901,12 @@
         }
         const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
+        const filename = `school-manager-backup_${timestamp}.json`;
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'school-manager-backup.json';
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1637,13 +1643,27 @@
             });
             if(res.mealServiceDietInfo && res.mealServiceDietInfo[1] && res.mealServiceDietInfo[1].row) {
                 let rows = res.mealServiceDietInfo[1].row;
-                let row = Array.isArray(rows) ? rows[0] : rows;
-                let dish = row.DDISH_NM;
-                let clean = dish.replace(/<br\s*\/?>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
-                globalMealLines = clean.split('\n').map(l => l.trim()).filter(l => l);
-                mealBox.innerHTML = globalMealLines.length > 0 
-                    ? globalMealLines.map(l => `<div class="meal-item">${l}</div>`).join('')
-                    : '<div class="empty">급식 없음</div>';
+                rows = Array.isArray(rows) ? rows : [rows];
+                const groupedMeals = rows.reduce((acc, item) => {
+                    const type = String(item.MMEAL_SC_NM || '중식').trim();
+                    const dish = String(item.DDISH_NM || '');
+                    const clean = dish.replace(/<br\s*\/?>>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
+                    const lines = clean.split('\n').map(l => l.trim()).filter(l => l);
+                    if (!acc[type]) acc[type] = [];
+                    acc[type].push(...lines);
+                    return acc;
+                }, {});
+                const mealTypes = Object.keys(groupedMeals);
+                if (mealTypes.length === 0) {
+                    mealBox.innerHTML = '<div class="empty">급식 없음</div>';
+                    globalMealLines = [];
+                } else {
+                    globalMealLines = mealTypes.flatMap(type => groupedMeals[type].map(line => `${type}: ${line}`));
+                    mealBox.innerHTML = mealTypes.map(type => {
+                        const linesHtml = groupedMeals[type].map(line => `<div class="meal-item">${line}</div>`).join('');
+                        return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
+                    }).join('');
+                }
             } else { 
                 mealBox.innerHTML = '<div class="empty">급식 없음</div>'; 
                 globalMealLines = []; 
@@ -1716,6 +1736,8 @@
 
     function openSearchSheet() {
         toggleSidebar();
+        document.getElementById('query-input').value = '';
+        document.getElementById('query-results').innerHTML = '<div class="empty">학교명을 입력하면 자동으로 검색됩니다.</div>';
         document.getElementById('searchSheetOverlay').classList.add('active');
         document.getElementById('searchSheet').classList.add('active');
         document.getElementById('searchSheet').style.bottom = '0';
@@ -1741,10 +1763,19 @@
         computeLiveTimeline();
         console.log('스케줄 설정 저장:', settings);
     }
+    let sidebarSearchTimeout = null;
+    function debouncedSidebarSchoolSearch() {
+        clearTimeout(sidebarSearchTimeout);
+        sidebarSearchTimeout = setTimeout(executeSchoolSearch, 250);
+    }
+
     async function executeSchoolSearch() {
         const word = document.getElementById('query-input').value.trim();
         const box = document.getElementById('query-results');
-        if(!word) return;
+        if(!word) {
+            box.innerHTML = '<div class="empty">검색어를 입력해주세요</div>';
+            return;
+        }
         box.innerHTML = '<div class="loading">...</div>';
         try {
             const res = await fetchNeis('schoolInfo', {
