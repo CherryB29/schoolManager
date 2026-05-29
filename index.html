@@ -220,20 +220,24 @@
         .onboarding-card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.6; font-weight: 500; }
         .calendar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10002; display: none; align-items: center; justify-content: center; padding: 16px; }
         .calendar-overlay.active { display: flex; }
-        .calendar-modal { width: min(420px,100%); background: var(--card-bg); border-radius: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.12); overflow: hidden; border: 1px solid rgba(0,0,0,0.08); }
-        .calendar-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 12px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
-        .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .calendar-modal { width: min(440px,100%); background: var(--card-bg); border-radius: 22px; box-shadow: 0 24px 60px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid rgba(0,0,0,0.08); }
+        .calendar-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 22px 16px; background: var(--card-bg); }
+        .calendar-month { font-size: 18px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+        .calendar-subtitle { margin-top: 6px; font-size: 13px; color: var(--text-secondary); }
         .calendar-nav { display: flex; gap: 10px; }
-        .calendar-nav button { border: none; background: rgba(49,130,246,0.08); color: var(--accent-blue); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 12px; background: rgba(49,130,246,0.04); }
-        .calendar-day-label, .calendar-day { text-align: center; font-size: 13px; }
-        .calendar-day-label { color: var(--text-secondary); padding: 10px 0; background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.08); border-radius: 0; font-weight: 700; }
-        .calendar-day-label.weekend { color: var(--accent-blue); }
-        .calendar-day { min-height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 0; cursor: pointer; color: var(--text-main); background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.08); }
-        .calendar-day.weekend { color: var(--accent-blue); background: rgba(49,130,246,0.08); }
-        .calendar-day:hover { background: rgba(49,130,246,0.16); }
-        .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 0 1px rgba(49,130,246,0.2); }
-        .calendar-day.disabled { color: var(--text-secondary); cursor: default; background: transparent; border-color: transparent; }
+        .calendar-nav button { border: none; background: rgba(49,130,246,0.1); color: var(--accent-blue); width: 38px; height: 38px; border-radius: 14px; cursor: pointer; font-size: 16px; transition: transform 0.2s ease, background 0.2s ease; }
+        .calendar-nav button:hover { transform: translateY(-1px); background: rgba(49,130,246,0.16); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 18px 18px; background: transparent; }
+        .calendar-day-label, .calendar-day { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; min-height: 44px; }
+        .calendar-day-label { color: var(--text-secondary); background: rgba(248,250,252,0.95); border-radius: 14px; font-weight: 800; }
+        .calendar-day-label.sun { color: #EF4444; }
+        .calendar-day-label.sat { color: #2563EB; }
+        .calendar-day { background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; cursor: pointer; color: var(--text-main); font-weight: 700; transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease; }
+        .calendar-day.sun { color: #EF4444; background: rgba(254,226,226,0.75); }
+        .calendar-day.sat { color: #2563EB; background: rgba(219,234,254,0.9); }
+        .calendar-day:hover { transform: translateY(-1px); background: rgba(49,130,246,0.14); border-color: rgba(49,130,246,0.18); }
+        .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 0 1px rgba(49,130,246,0.24); }
+        .calendar-day.disabled { background: transparent; border-color: transparent; color: var(--text-secondary); cursor: default; pointer-events: none; }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -277,11 +281,7 @@
         .schedule-setting-row input { padding: 10px 12px; border: 1px solid var(--divider); border-radius: 12px; background: var(--bg-color); color: var(--text-main); font-size: 13px; font-weight: 600; }
         .schedule-settings input[type="number"] { width: 100%; }
         
-        .calendar-day { min-height: 46px; border: 1px solid transparent; background: var(--bg-color); border-radius: 12px; cursor: pointer; padding: 0; font-weight: 600; }
-        .calendar-day:hover { background: rgba(49,130,246,0.12); }
-        .calendar-day.selected { background: var(--accent-blue); color: white; }
-        .calendar-day.disabled { cursor: default; background: transparent; border: none; }
-
+        
     </style>
 </head>
 <body>
@@ -304,20 +304,23 @@
 <div class="calendar-overlay" id="calendarOverlay" onclick="closeCalendar(event)">
     <div class="calendar-modal" onclick="event.stopPropagation()">
         <div class="calendar-header">
-            <div class="calendar-month" id="calendarMonthLabel">2024년 1월</div>
+            <div>
+                <div class="calendar-month" id="calendarMonthLabel">2024년 1월</div>
+                <div class="calendar-subtitle">원하는 날짜를 선택하세요.</div>
+            </div>
             <div class="calendar-nav">
                 <button onclick="changeCalendarMonth(-1)">&lt;</button>
                 <button onclick="changeCalendarMonth(1)">&gt;</button>
             </div>
         </div>
         <div class="calendar-grid" id="calendarDaysContainer">
-            <div class="calendar-day-label weekend">일</div>
+            <div class="calendar-day-label sun">일</div>
             <div class="calendar-day-label">월</div>
             <div class="calendar-day-label">화</div>
             <div class="calendar-day-label">수</div>
             <div class="calendar-day-label">목</div>
             <div class="calendar-day-label">금</div>
-            <div class="calendar-day-label weekend">토</div>
+            <div class="calendar-day-label sat">토</div>
         </div>
     </div>
 </div>
