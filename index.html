@@ -1421,22 +1421,32 @@
             return html;
         }
         
-        function renderTomorrowSmallTimetable(rows) {
+        function renderTimetableRows(rows) {
             if (!rows || rows.length === 0) {
-                return `<div class="now-section next-event"><div class="now-lbl">다음 등교일 시간표</div><div class="now-val">시간표 정보를 불러올 수 없습니다.</div></div>`;
+                return '<div class="empty">시간표 데이터 없음</div>';
             }
             const currentClass = document.getElementById('class-select').value;
-            let html = '<div class="now-section next-event"><div class="now-lbl">다음 등교일 시간표</div><ul class="now-timetable-sm">';
+            let html = '<ul class="timetable-list">';
             rows.forEach(r => {
-                const p = parseInt(r.PERIO, 10);
-                const subject = (r.ITRT_CNTNT || '').trim() || '공강';
-                const movingKey = `${currentClass}-${subject}`;
+                const fallbackName = (r.ITRT_CNTNT || '').trim();
+                const p = r.PERIO;
+                const movingKey = `${currentClass}-${fallbackName}`;
                 const movingData = MAP_MOVING_POOL[movingKey];
-                const finalName = movingData ? `${movingData.newSubject} (${movingData.movingClass}반)` : subject;
-                html += `<li><span>${p}교시</span><span>${finalName}</span></li>`;
+                const finalName = movingData ? movingData.newSubject : fallbackName;
+                const movingClass = movingData ? movingData.movingClass : null;
+                const colorKey = movingData ? `${movingClass}-${finalName}` : `${currentClass}-${finalName}`;
+                const cid = MAP_COLORS[colorKey] || '';
+                const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
+                const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
+                const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
+                html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
             });
-            html += '</ul></div>';
+            html += '</ul>';
             return html;
+        }
+
+        function renderTomorrowSmallTimetable(rows) {
+            return renderTimetableRows(rows);
         }
 
         function renderNonSchoolDay() {
@@ -1491,29 +1501,7 @@
                 let rows = res[SCHOOL_TYPE][1].row;
                 globalTodayRows = Array.isArray(rows) ? rows : [rows];
                 globalTodayRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
-                
-                let html = '<ul class="timetable-list">';
-                const currentClass = document.getElementById('class-select').value;
-                globalTodayRows.forEach(r => {
-                    const fallbackName = r.ITRT_CNTNT.trim();
-                    const p = r.PERIO;
-                    
-                    const movingKey = `${currentClass}-${fallbackName}`;
-                    const movingData = MAP_MOVING_POOL[movingKey];
-                    
-                    const finalName = movingData ? movingData.newSubject : fallbackName;
-                    const movingClass = movingData ? movingData.movingClass : null;
-                    const colorKey = movingData ? `${movingClass}-${finalName}` : `${currentClass}-${finalName}`;
-                    const cid = MAP_COLORS[colorKey] || '';
-                    
-                    let dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
-                    let badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
-                    let textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
-
-                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
-                });
-                html += '</ul>';
-                timeBox.innerHTML = html;
+                timeBox.innerHTML = renderTimetableRows(globalTodayRows);
             } else { 
                 timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>'; 
                 globalTodayRows = []; 
