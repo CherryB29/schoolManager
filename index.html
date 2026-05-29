@@ -1501,10 +1501,27 @@
                 let rows = res[SCHOOL_TYPE][1].row;
                 globalTodayRows = Array.isArray(rows) ? rows : [rows];
                 globalTodayRows.sort((a,b)=>parseInt(a.PERIO) - parseInt(b.PERIO));
-                timeBox.innerHTML = renderTimetableRows(globalTodayRows);
-            } else { 
-                timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>'; 
-                globalTodayRows = []; 
+                let html = '<ul class="timetable-list">';
+                const currentClass = document.getElementById('class-select').value;
+                globalTodayRows.forEach(r => {
+                    const fallbackName = (r.ITRT_CNTNT || '').trim();
+                    const p = r.PERIO;
+                    const movingKey = `${currentClass}-${fallbackName}`;
+                    const movingData = MAP_MOVING_POOL[movingKey];
+                    const finalName = movingData ? movingData.newSubject : fallbackName;
+                    const movingClass = movingData ? movingData.movingClass : null;
+                    const colorKey = movingData ? `${movingClass}-${finalName}` : `${currentClass}-${finalName}`;
+                    const cid = MAP_COLORS[colorKey] || '';
+                    const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
+                    const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
+                    const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
+                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                });
+                html += '</ul>';
+                timeBox.innerHTML = html;
+            } else {
+                timeBox.innerHTML = '<div class="empty">시간표 데이터 없음</div>';
+                globalTodayRows = [];
             }
         } catch(e) { 
             console.error('시간표 오류:', e);
