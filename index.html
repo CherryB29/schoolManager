@@ -229,14 +229,14 @@
         .calendar-nav button:hover { transform: translateY(-1px); background: rgba(49,130,246,0.16); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 18px 18px; background: transparent; }
         .calendar-day-label, .calendar-day { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; min-height: 44px; }
-        .calendar-day-label { color: var(--text-secondary); background: rgba(248,250,252,0.95); border-radius: 14px; font-weight: 800; }
+        .calendar-day-label { color: var(--text-secondary); background: rgba(248,250,252,0.95); border-radius: 0; font-weight: 800; }
         .calendar-day-label.sun { color: #EF4444; }
         .calendar-day-label.sat { color: #2563EB; }
-        .calendar-day { background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; cursor: pointer; color: var(--text-main); font-weight: 700; transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease; }
+        .calendar-day { background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.08); border-radius: 0; cursor: pointer; color: var(--text-main); font-weight: 700; transition: background 0.15s ease, border-color 0.15s ease; }
         .calendar-day.sun { color: #EF4444; background: rgba(254,226,226,0.75); }
         .calendar-day.sat { color: #2563EB; background: rgba(219,234,254,0.9); }
-        .calendar-day:hover { transform: translateY(-1px); background: rgba(49,130,246,0.14); border-color: rgba(49,130,246,0.18); }
-        .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 0 1px rgba(49,130,246,0.24); }
+        .calendar-day:hover { background: rgba(49,130,246,0.14); border-color: rgba(49,130,246,0.18); }
+        .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
         .calendar-day.disabled { background: transparent; border-color: transparent; color: var(--text-secondary); cursor: default; pointer-events: none; }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
