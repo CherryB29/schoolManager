@@ -89,7 +89,7 @@
         /* Date Title Area Line Configuration */
         .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
-        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; }
+        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
         /* Cards Base Style */
@@ -127,6 +127,9 @@
         .timetable-list { list-style: none; padding: 0; margin: 0; }
         .timetable-list li { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--divider); }
         .timetable-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .timetable-hint { display: none; align-items: center; gap: 10px; margin-bottom: 16px; padding: 12px 14px; border-radius: 16px; background: rgba(49,130,246,0.08); color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+        .timetable-hint svg { width: 18px; height: 18px; flex-shrink: 0; fill: currentColor; }
+        .timetable-hint strong { color: var(--text-main); font-weight: 700; }
         .period { color: var(--text-secondary); font-weight: 700; font-size: 13px; width: 50px; }
         .subject-container { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
         .subject { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -135,8 +138,8 @@
         /* Achromatic Minimal Moving Badge */
         .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
         .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
-        .meal-group { margin-bottom: 14px; border-radius: 16px; background: rgba(242, 244, 246, 0.9); padding: 14px 16px; border: 1px solid var(--divider); }
-        .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+        .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
+        .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
 
         /* Sidebar Settings Layout */
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 1000; }
@@ -497,6 +500,10 @@
         <div class="middle-column">
             <div class="card">
                 <h2>오늘 시간표</h2>
+                <div id="timetable-edit-hint" class="timetable-hint">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm.75 15.5h-1.5v-1.5h1.5v1.5Zm1.78-6.55-.92.92c-.42.42-.66.98-.66 1.59v.82h-1.5v-.75c0-.67.27-1.31.74-1.78l1.12-1.12c.3-.3.46-.71.46-1.14 0-.88-.72-1.6-1.6-1.6s-1.6.72-1.6 1.6H9c0-1.43 1.17-2.6 2.6-2.6s2.6 1.17 2.6 2.6c0 .59-.23 1.16-.64 1.57Z"/></svg>
+                    <span>사이드바 메뉴(<strong>☰</strong>)에서 <strong>시간표 편집</strong>으로 첫 시간표를 등록하세요.</span>
+                </div>
                 <div id="render-timetable"><div class="loading">...</div></div>
             </div>
         </div>
@@ -524,6 +531,7 @@
     let MAP_MOVING_POOL = {};
     let scheduleSettings = null;
     let onboardingSelectedGrade = null;
+    let timetableEdited = localStorage.getItem('TIMETABLE_EDITED') === 'true';
     let showSeconds = localStorage.getItem('SHOW_SECONDS') === 'true';
 
     function getDefaultScheduleSettings() {
@@ -556,6 +564,12 @@
         document.getElementById('class-duration').value = settings.classDuration;
         document.getElementById('break-duration').value = settings.breakDuration;
         document.getElementById('lunch-duration').value = settings.lunchDuration;
+    }
+
+    function updateTimetableHint() {
+        const hint = document.getElementById('timetable-edit-hint');
+        if (!hint) return;
+        hint.style.display = timetableEdited ? 'none' : 'flex';
     }
 
     function createTimelineFromSettings() {
@@ -1110,6 +1124,9 @@
     }
 
     async function openEditorSheet() {
+        timetableEdited = true;
+        localStorage.setItem('TIMETABLE_EDITED', 'true');
+        updateTimetableHint();
         toggleSidebar();
         document.getElementById('fullSheetOverlay').classList.add('active');
         document.getElementById('fullSheet').classList.add('active');
@@ -1564,7 +1581,7 @@
             return `<div class="now-main">
                 <div class="now-time-label">다음 등교일</div>
                 <div class="now-title" style="font-size:22px;">${month}월 ${date}일 ${nextLabel}요일</div>
-                <div class="now-subtitle">가장 가까운 다음 등교일 시간표입니다.</div>
+                <div class="now-subtitle">${nextLabel}요일 시간표입니다.</div>
             </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
         }
         
@@ -1631,6 +1648,7 @@
             timeBox.innerHTML = '<div class="empty">시간표 수집 실패</div>'; 
             globalTodayRows = []; 
         }
+        updateTimetableHint();
 
         const mealBox = document.getElementById('render-meal');
         mealBox.innerHTML = '<div class="loading">...</div>';
