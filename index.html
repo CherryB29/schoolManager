@@ -225,13 +225,15 @@
         .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-main); }
         .calendar-nav { display: flex; gap: 10px; }
         .calendar-nav button { border: none; background: rgba(49,130,246,0.08); color: var(--accent-blue); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 18px 18px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 12px; background: rgba(49,130,246,0.04); }
         .calendar-day-label, .calendar-day { text-align: center; font-size: 13px; }
-        .calendar-day-label { color: var(--text-secondary); padding: 10px 0; background: rgba(49,130,246,0.04); border: 1px solid rgba(49,130,246,0.08); border-radius: 4px; font-weight: 700; }
-        .calendar-day { min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; color: var(--text-main); background: var(--bg-color); border: 1px solid rgba(0,0,0,0.08); }
-        .calendar-day:hover { background: rgba(49,130,246,0.12); }
+        .calendar-day-label { color: var(--text-secondary); padding: 10px 0; background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.08); border-radius: 0; font-weight: 700; }
+        .calendar-day-label.weekend { color: var(--accent-blue); }
+        .calendar-day { min-height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 0; cursor: pointer; color: var(--text-main); background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.08); }
+        .calendar-day.weekend { color: var(--accent-blue); background: rgba(49,130,246,0.08); }
+        .calendar-day:hover { background: rgba(49,130,246,0.16); }
         .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 0 1px rgba(49,130,246,0.2); }
-        .calendar-day.disabled { color: var(--text-secondary); cursor: default; background: #f6f8fb; border-color: transparent; }
+        .calendar-day.disabled { color: var(--text-secondary); cursor: default; background: transparent; border-color: transparent; }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -309,13 +311,13 @@
             </div>
         </div>
         <div class="calendar-grid" id="calendarDaysContainer">
-            <div class="calendar-day-label">일</div>
+            <div class="calendar-day-label weekend">일</div>
             <div class="calendar-day-label">월</div>
             <div class="calendar-day-label">화</div>
             <div class="calendar-day-label">수</div>
             <div class="calendar-day-label">목</div>
             <div class="calendar-day-label">금</div>
-            <div class="calendar-day-label">토</div>
+            <div class="calendar-day-label weekend">토</div>
         </div>
     </div>
 </div>
@@ -955,8 +957,9 @@
         for (let day = 1; day <= daysInMonth; day++) {
             const item = document.createElement('button');
             item.type = 'button';
-            item.className = 'calendar-day';
             const current = new Date(year, month, day);
+            const isWeekendDay = current.getDay() === 0 || current.getDay() === 6;
+            item.className = `calendar-day${isWeekendDay ? ' weekend' : ''}`;
             const iso = current.toISOString().slice(0, 10);
             item.textContent = day;
             if (iso === selectedValue) item.classList.add('selected');
@@ -1250,7 +1253,7 @@
 
         renderWeeklyGrid();
         refresh();
-    }
+    }   
 
     /* 초 단위 갱신 시 NOW 카드 실시간 렌더링 */
     function computeLiveTimeline() {
@@ -1305,11 +1308,25 @@
                 </div>`;
             } else if (totalMins >= timeline[timeline.length - 1].end) {
                 // 학교 끝난 후
-                html = `<div class="now-main">
-                    <div class="now-time-label">학교 종료</div>
-                    <div class="now-title">오늘 일정 완료</div>
-                    <div class="now-subtitle">내일 시간표</div>
-                </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                if (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) {
+                    html = `<div class="now-main">
+                        <div class="now-time-label">학교 종료</div>
+                        <div class="now-title">오늘 일정 완료</div>
+                        <div class="now-subtitle">내일은 주말입니다</div>
+                    </div>
+                    <div class="now-section next-event">
+                        <div class="now-lbl">내일 시간표</div>
+                        <div class="now-val">토요일과 일요일에는 내일 시간표를 표시하지 않습니다.</div>
+                    </div>`;
+                } else {
+                    html = `<div class="now-main">
+                        <div class="now-time-label">학교 종료</div>
+                        <div class="now-title">오늘 일정 완료</div>
+                        <div class="now-subtitle">내일 시간표</div>
+                    </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
+                }
             } else if (found) {
                 const remaining = found.end - totalMins;
                 const isCritical = remaining <= 2;
@@ -1401,24 +1418,13 @@
         }
 
         function renderNonSchoolDay() {
-            const nextDay = getNextSchoolDay(now);
-            if (!nextDay) {
-                return `<div class="now-main"><div class="now-title">학사 일정 정보 없음</div></div>`;
-            }
             const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-            const dayLabel = dayLabels[nextDay.getDay()];
-            let html = `<div class="now-main">
-                <div class="now-time-label">다음 학교날</div>
-                <div class="now-title" style="font-size:22px;">${nextDay.getMonth()+1}월 ${nextDay.getDate()}일 ${dayLabel}요일</div>
-                <div class="now-subtitle">내일 시간표</div>
-            </div>${renderTomorrowSmallTimetable(globalTomorrowRows)}`;
-            if (globalTomorrowMealLines.length > 0) {
-                html += `<div class="now-section next-event">
-                    <div class="now-lbl">급식</div>
-                    <div class="now-val meal-summary">${globalTomorrowMealLines.join(', ')}</div>
-                </div>`;
-            }
-            return html;
+            const todayLabel = dayLabels[now.getDay()];
+            return `<div class="now-main">
+                <div class="now-time-label">주말</div>
+                <div class="now-title" style="font-size:22px;">오늘은 ${todayLabel}요일입니다</div>
+                <div class="now-subtitle">토요일과 일요일에는 내일 시간표를 표시하지 않습니다.</div>
+            </div>`;
         }
         
         const isSchoolDay = day >= 1 && day <= 5;
