@@ -89,7 +89,6 @@
         /* Date Title Area Line Configuration */
         .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
-        .header-time-display { font-size: 14px; color: var(--text-secondary); margin-top: 4px; letter-spacing: 0.2px; }
         .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 0.2px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
@@ -144,21 +143,14 @@
         .sidebar-overlay.active { opacity: 1; visibility: visible; }
         .sidebar-header { padding: calc(16px + env(safe-area-inset-top)) 20px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
         .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 800; }
-        .sidebar-tabs { display: flex; gap: 8px; padding: 0 16px 12px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
-        .sidebar-tab { flex: 1; padding: 10px 0; border: none; background: transparent; color: var(--text-secondary); font-weight: 800; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
-        .sidebar-tab.active { color: var(--text-main); border-color: var(--accent-blue); }
         .sidebar-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-        .sidebar-tab-content { display: none; flex-direction: column; gap: 12px; }
-        .sidebar-tab-content.active { display: flex; }
 
         .menu-row { background: var(--card-bg); padding: 16px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 15px; }
-        .menu-row select { border: none; background: transparent; color: var(--accent-blue); font-size: 15px; font-weight: 700; outline: none; text-align: right; cursor: pointer; direction: rtl; }
-        .menu-clickable { cursor: pointer; }
-        .menu-clickable svg { width: 16px; height: 16px; fill: var(--text-secondary); }
-        .backup-button { width: 100%; border: none; background: var(--accent-blue); color: white; font-weight: 800; border-radius: 12px; padding: 12px 0; cursor: pointer; }
-        .backup-button.secondary { background: rgba(49,130,246,0.1); color: var(--text-main); }
-        .backup-note { color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
-        .backup-status { min-height: 20px; font-size: 13px; color: var(--text-main); }
+        .menu-button { width: 100%; border: none; background: rgba(49,130,246,0.12); color: var(--accent-blue); border-radius: 12px; padding: 12px 14px; font-weight: 700; cursor: pointer; }
+        .menu-button:hover { background: rgba(49,130,246,0.18); }
+        .sidebar-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+        .sidebar-tab { flex: 1; border: none; background: rgba(49,130,246,0.08); color: var(--text-secondary); padding: 12px 0; border-radius: 12px; cursor: pointer; font-weight: 700; }
+        .sidebar-tab.active { background: var(--accent-blue); color: white; }
         .menu-row select { border: none; background: transparent; color: var(--accent-blue); font-size: 15px; font-weight: 700; outline: none; text-align: right; cursor: pointer; direction: rtl; }
         .menu-clickable { cursor: pointer; }
         .menu-clickable svg { width: 16px; height: 16px; fill: var(--text-secondary); }
@@ -218,9 +210,11 @@
         .moving-chip div:last-child { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
         /* School Finder Structure Layout */
-        .search-container { display: flex; gap: 8px; width: 100%; margin-top: 12px; }
-        .search-container input { flex: 1; padding: 14px; border-radius: 12px; border: none; background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; }
-        .search-container button { padding: 0 16px; border-radius: 12px; border: none; background: var(--accent-blue); color: white; font-weight: 700; cursor: pointer; }
+        .search-container { display: flex; width: 100%; margin-top: 12px; }
+        .search-field { position: relative; flex: 1; }
+        .search-field input { width: 100%; padding: 14px 44px 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); color: var(--text-main); font-size: 15px; outline: none; }
+        .search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; fill: var(--text-secondary); pointer-events: none; }
+        .search-container button { display: none; }
         .list-results { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
         .item-node { padding: 14px; background: var(--card-bg); border-radius: 12px; cursor: pointer; border: 1px solid var(--divider); }
         .loading, .empty { color: var(--text-secondary); text-align: center; padding: 20px 0; font-size: 13px; font-weight: 600; }
@@ -280,7 +274,12 @@
         .onboarding-btn {
             color: white;
         }
-        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 24px; max-width: min(420px,100%); width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 720px; width: 100%; min-height: 480px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-overlay { padding: 16px 18px; }
+        .onboarding-results { margin-bottom: 12px; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .onboarding-search { display: flex; width: 100%; margin-bottom: 18px; }
+        .search-field { width: 100%; }
+        .search-field input { border-radius: 16px; }
         .onboarding-search input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); font-size: 15px; }
         .onboarding-search button { padding: 0 16px; background: var(--accent-blue); border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
         .search-container input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); font-size: 15px; }
@@ -307,8 +306,10 @@
         <p id="onboarding-desc">시간표를 확인하려면 학교를 먼저 선택해주세요.</p>
         <div id="onboarding-content">
             <div class="onboarding-search">
-                <input type="text" id="onboarding-query" placeholder="학교명 입력" autocomplete="off" oninput="debouncedOnboardingSearchSchool()" onkeypress="if(event.key==='Enter') onboardingSearchSchool()">
-                <button onclick="onboardingSearchSchool()">검색</button>
+                <div class="search-field">
+                    <input type="text" id="onboarding-query" placeholder="학교명 입력" autocomplete="off" oninput="debouncedOnboardingSearchSchool()" onkeypress="if(event.key==='Enter') onboardingSearchSchool()">
+                    <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </div>
             </div>
             <div class="onboarding-results" id="onboarding-results"></div>
         </div>
@@ -351,18 +352,15 @@
         <h2>설정</h2>
         <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
     </div>
-    <div class="sidebar-tabs">
-        <button class="sidebar-tab active" onclick="setSidebarTab('general')">기본</button>
-        <button class="sidebar-tab" onclick="setSidebarTab('backup')">백업</button>
-    </div>
     <div class="sidebar-content">
-        <div class="sidebar-tab-content active" id="sidebar-general-tab">
-            <div class="menu-row">
-                <span>다크 모드</span>
-                <label class="switch">
-                    <input type="checkbox" id="dark-mode-toggle" onchange="changeTheme(this.checked)">
-                    <span class="slider"></span>
-                </label>
+        <div class="sidebar-tabs">
+            <button class="sidebar-tab active" id="tab-school" onclick="switchSidebarTab('school')">학교</button>
+            <button class="sidebar-tab" id="tab-settings" onclick="switchSidebarTab('settings')">설정</button>
+        </div>
+        <div class="sidebar-section" id="sidebar-school-content">
+            <div class="menu-row menu-clickable" onclick="openSearchSheet()">
+                <span>학교 변경</span>
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="menu-row">
                 <span>학년</span>
@@ -381,40 +379,27 @@
                 <span>시간표 편집</span>
                 <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
-            <div class="menu-row menu-clickable" onclick="openSearchSheet()">
-                <span>학교 변경</span>
-                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-            </div>
-            <div class="schedule-settings">
-                <div class="schedule-setting-row">
-                    <label>1교시 시작 시간</label>
-                    <input type="time" id="start-time" value="09:00" onchange="updateScheduleSettings()">
-                </div>
-                <div class="schedule-setting-row">
-                    <label>수업 시간 (분)</label>
-                    <input type="number" id="class-duration" value="50" min="30" max="60" onchange="updateScheduleSettings()">
-                </div>
-                <div class="schedule-setting-row">
-                    <label>쉬는시간 (분)</label>
-                    <input type="number" id="break-duration" value="10" min="5" max="20" onchange="updateScheduleSettings()">
-                </div>
-                <div class="schedule-setting-row">
-                    <label>점심시간 (분)</label>
-                    <input type="number" id="lunch-duration" value="60" min="40" max="90" onchange="updateScheduleSettings()">
-                </div>
-            </div>
         </div>
-        <div class="sidebar-tab-content" id="sidebar-backup-tab">
+        <div class="sidebar-section" id="sidebar-settings-content" style="display:none;">
             <div class="menu-row">
-                <span>데이터 백업</span>
+                <span>다크 모드</span>
+                <label class="switch">
+                    <input type="checkbox" id="dark-mode-toggle" onchange="changeTheme(this.checked)">
+                    <span class="slider"></span>
+                </label>
             </div>
-            <div class="menu-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-                <button class="backup-button" onclick="exportBackupData()">백업 내보내기</button>
-                <button class="backup-button secondary" onclick="triggerBackupImport()">백업 불러오기</button>
-                <input type="file" id="backup-file-input" accept="application/json" style="display:none" onchange="handleBackupFile(event)">
-                <div class="backup-note">학교 정보, 시간표 설정, 이동 수업 데이터를 JSON으로 백업/복원합니다.</div>
-                <div class="backup-status" id="backup-status"></div>
+            <div class="menu-row">
+                <span>시간에 초 표시</span>
+                <label class="switch">
+                    <input type="checkbox" id="seconds-toggle" onchange="toggleShowSeconds(this.checked)">
+                    <span class="slider"></span>
+                </label>
             </div>
+            <div class="menu-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                <button class="menu-button" onclick="downloadBackup()">데이터 백업</button>
+                <button class="menu-button" onclick="triggerImportBackup()">데이터 불러오기</button>
+            </div>
+            <input type="file" id="backup-file-input" accept="application/json" style="display:none" onchange="handleBackupImport(event)">
         </div>
     </div>
 </aside>
@@ -495,7 +480,6 @@
     <div class="date-picker-wrapper" onclick="openCalendar()" title="날짜를 눌러 변경하세요">
         <div class="school-badge" id="meta-school-name">-</div>
         <div class="date-display" id="meta-date-label">로딩 중...</div>
-        <div class="header-time-display" id="header-time-display">--:--:--</div>
         <div class="date-hint">날짜를 눌러 변경</div>
         <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()" style="display:none;">
     </div>
@@ -543,6 +527,7 @@
     let MAP_MOVING_POOL = {};
     let scheduleSettings = null;
     let onboardingSelectedGrade = null;
+    let showSeconds = localStorage.getItem('SHOW_SECONDS') === 'true';
 
     function getDefaultScheduleSettings() {
         return {
@@ -719,7 +704,7 @@
         const modal = document.getElementById('classSelectModal');
         const content = document.getElementById('classSelectContent');
         modal.style.display = 'flex';
-        content.innerHTML = '<div class="loading">반 번호를 확인 중입니다...</div>';
+        content.innerHTML = '<div class="loading">확인 중입니다...</div>';
 
         const classNumbers = await fetchGradeClassNumbers(grade);
         renderClassSelectButtons(classNumbers);
@@ -895,69 +880,10 @@
         document.getElementById('sidebarOverlay').classList.toggle('active');
     }
 
-    function setSidebarTab(tab) {
-        document.querySelectorAll('.sidebar-tab').forEach(btn => btn.classList.toggle('active', btn.textContent.trim() === (tab === 'backup' ? '백업' : '기본')));
-        document.querySelectorAll('.sidebar-tab-content').forEach(panel => panel.classList.toggle('active', panel.id === `sidebar-${tab}-tab`));
-    }
-
-    function updateHeaderTime() {
-        const now = new Date();
-        const hrs = String(now.getHours()).padStart(2, '0');
-        const mins = String(now.getMinutes()).padStart(2, '0');
-        const secs = String(now.getSeconds()).padStart(2, '0');
-        const display = document.getElementById('header-time-display');
-        if (display) display.innerText = `${hrs}:${mins}:${secs}`;
-    }
-
-    function exportBackupData() {
-        const backupKeys = [
-            'ATPT_CODE', 'SCHUL_CODE', 'SCHOOL_TYPE', 'SCHOOL_NAME', 'CLASS_NM', 'G_VAL', 'ONBOARDING_DONE', 'THEME'
-        ];
-        const data = {};
-        backupKeys.forEach(key => {
-            if (localStorage.getItem(key) !== null) {
-                data[key] = localStorage.getItem(key);
-            }
-        });
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && (key.startsWith('MAP_COLORS_') || key.startsWith('MAP_MOVING_POOL_') || key.startsWith('SCHEDULE_SETTINGS_'))) {
-                data[key] = localStorage.getItem(key);
-            }
-        }
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `school-manager-backup-${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        document.getElementById('backup-status').innerText = '백업 파일이 다운로드되었습니다.';
-    }
-
-    function triggerBackupImport() {
-        document.getElementById('backup-file-input').click();
-    }
-
-    function handleBackupFile(event) {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const data = JSON.parse(reader.result);
-                Object.keys(data).forEach(key => {
-                    localStorage.setItem(key, data[key]);
-                });
-                document.getElementById('backup-status').innerText = '백업 복원이 완료되었습니다. 페이지를 새로고침하세요.';
-                loadSettings();
-                refresh();
-            } catch (e) {
-                document.getElementById('backup-status').innerText = '백업 파일을 읽는 중 오류가 발생했습니다.';
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
+    function switchSidebarTab(tab) {
+        document.querySelectorAll('.sidebar-tab').forEach(btn => btn.classList.toggle('active', btn.id === `tab-${tab}`));
+        document.getElementById('sidebar-school-content').style.display = tab === 'school' ? 'block' : 'none';
+        document.getElementById('sidebar-settings-content').style.display = tab === 'settings' ? 'block' : 'none';
     }
 
     function changeTheme(isDark) {
@@ -965,6 +891,50 @@
         document.documentElement.setAttribute('data-theme', t);
         localStorage.setItem('THEME', t);
         refresh();
+    }
+
+    function toggleShowSeconds(enabled) {
+        showSeconds = enabled;
+        localStorage.setItem('SHOW_SECONDS', enabled ? 'true' : 'false');
+        computeLiveTimeline();
+    }
+
+    function downloadBackup() {
+        const backup = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            backup[key] = localStorage.getItem(key);
+        }
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'school-manager-backup.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function triggerImportBackup() {
+        document.getElementById('backup-file-input').click();
+    }
+
+    function handleBackupImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                Object.keys(data).forEach(key => localStorage.setItem(key, data[key]));
+                alert('백업 데이터를 불러왔습니다. 페이지를 새로고침합니다.');
+                location.reload();
+            } catch (err) {
+                alert('유효하지 않은 백업 파일입니다.');
+            }
+        };
+        reader.readAsText(file);
     }
 
     async function fetchAndRenderClassOptions(grade) {
@@ -1021,6 +991,7 @@
             document.documentElement.setAttribute('data-theme', 'dark');
             document.getElementById('dark-mode-toggle').checked = true;
         }
+        document.getElementById('seconds-toggle').checked = showSeconds;
 
         const onboardingDone = localStorage.getItem('ONBOARDING_DONE') === 'true';
         const hasSchoolAndClass = Boolean(SCHUL_CODE && CLASS_NM);
@@ -1047,8 +1018,6 @@
 
         buildPaletteUI();
         refresh();
-        updateHeaderTime();
-        setInterval(updateHeaderTime, 1000);
         setInterval(computeLiveTimeline, 1000);
     }
 
@@ -1421,7 +1390,7 @@
         const hrs = String(now.getHours()).padStart(2, '0');
         const mins = String(now.getMinutes()).padStart(2, '0');
         const secs = String(now.getSeconds()).padStart(2, '0');
-        if (clockEl) clockEl.innerText = `${hrs}:${mins}:${secs}`;
+        if (clockEl) clockEl.innerText = showSeconds ? `${hrs}:${mins}:${secs}` : `${hrs}:${mins}`;
 
         const totalMins = now.getHours() * 60 + now.getMinutes();
         const day = now.getDay();
