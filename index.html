@@ -370,6 +370,30 @@
 </div>
 </div>
 
+<!-- Memo Detail Overlay -->
+<div class="calendar-overlay" id="memoDetailOverlay" onclick="closeMemoDetail(event)">
+    <div class="calendar-modal" onclick="event.stopPropagation();">
+        <div class="calendar-header">
+            <div>
+                <div class="calendar-month" id="memoDetailTitle">메모 상세</div>
+                <div class="calendar-subtitle">메모 세부 정보</div>
+            </div>
+            <div class="calendar-nav">
+                <button onclick="closeMemoDetail()">✕</button>
+            </div>
+        </div>
+        <div style="padding:18px;">
+            <div style="margin-bottom:8px;font-weight:800;font-size:16px;" id="memoDetailSubject">-</div>
+            <div style="margin-bottom:8px;color:var(--text-secondary);" id="memoDetailDate">-</div>
+            <div style="margin-bottom:12px;" id="memoDetailSticker"></div>
+            <div style="margin-bottom:12px;color:var(--text-main);" id="memoDetailText"></div>
+            <div style="display:flex;gap:8px;">
+                <button class="menu-button" onclick="closeMemoDetail()">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Memo List Overlay -->
 <div class="calendar-overlay" id="memoListOverlay" onclick="closeMemoList(event)">
     <div class="calendar-modal" onclick="event.stopPropagation();">
@@ -385,7 +409,7 @@
         <div style="padding:18px;">
             <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
                 <input id="memo-search" placeholder="메모 검색" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--divider);" oninput="renderMemoList(this.value)" />
-                <button class="menu-button" onclick="openAddMemoForm()">새 메모 추가하기</button>
+                <button class="menu-button" onclick="openAddMemoForm()">+</button>
             </div>
             <div id="memo-list" style="max-height:360px;overflow:auto;"></div>
         </div>
@@ -419,6 +443,8 @@
                     <button type="button" class="menu-button" id="shape-star" onclick="selectStickerShape('star')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z"/></svg></button>
                     <button type="button" class="menu-button" id="shape-heart" onclick="selectStickerShape('heart')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z"/></svg></button>
                     <button type="button" class="menu-button" id="shape-triangle" onclick="selectStickerShape('triangle')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 4l8 14H4z"/></svg></button>
+                    <button type="button" class="menu-button" id="shape-circle" onclick="selectStickerShape('circle')"><svg class="sticker-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></button>
+                    <button type="button" class="menu-button" id="shape-square" onclick="selectStickerShape('square')"><svg class="sticker-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></button>
                 </div>
             </div>
             <div style="margin-bottom:12px;">
@@ -1190,7 +1216,16 @@
 
     function closeCalendar(event) {
         if (event && event.target.id !== 'calendarOverlay') return;
-        document.getElementById('calendarOverlay').classList.remove('active');
+        const cal = document.getElementById('calendarOverlay');
+        cal.classList.remove('active');
+        // restore z-index when used from memo form
+        if(cal.dataset && cal.dataset.prevZ !== undefined) {
+            cal.style.zIndex = cal.dataset.prevZ || '';
+            delete cal.dataset.prevZ;
+        }
+        // restore memo form z-index
+        const memoForm = document.getElementById('memoFormOverlay');
+        if(memoForm) memoForm.style.zIndex = '';
     }
 
     function changeCalendarMonth(delta) {
@@ -1608,6 +1643,16 @@
         document.getElementById('memoListOverlay').classList.add('active');
     }
 
+    function handleStickerClick(classNm, subject) {
+        const arr = getMemosForSubject(classNm, subject);
+        if(!arr || arr.length === 0) return;
+        if(arr.length === 1) showMemoDetails(arr[0].id);
+        else {
+            renderMemoList(subject);
+            document.getElementById('memoListOverlay').classList.add('active');
+        }
+    }
+
     function closeMemoList(event) {
         if(event && event.target && event.target.id !== 'memoListOverlay') return;
         document.getElementById('memoListOverlay').classList.remove('active');
@@ -1660,6 +1705,11 @@
             }).catch(()=>{ subjBox.innerHTML = '<option>-</option>' });
         };
         buildCalendar(new Date(document.getElementById('memo-date-display').value + 'T00:00:00'));
+        // ensure calendar overlay is on top of memo form
+        const cal = document.getElementById('calendarOverlay');
+        cal.dataset.prevZ = cal.style.zIndex || '';
+        cal.style.zIndex = '11000';
+        document.getElementById('memoFormOverlay').style.zIndex = '10000';
         document.getElementById('calendarOverlay').classList.add('active');
     }
 
@@ -1687,7 +1737,7 @@
             const shape = m.shape || 'star';
             const color = m.color || '1';
             const emoji = shape === 'star' ? 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z' : (shape === 'heart' ? 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z' : 'M12 4l8 14H4z');
-            return `<div class="onboarding-result-item" style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:10px;"><svg class="sticker-small" viewBox="0 0 24 24" style="fill:${color && color!=='none' ? `var(--sub-${color})` : 'var(--text-secondary)'}"><path d="${emoji}"/></svg><div><div style="font-weight:800">${m.subject} <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${m.date}</span></div><div style="font-size:13px;color:var(--text-secondary);">${(m.text||'').slice(0,120)}</div></div></div><div style="display:flex;gap:8px;"><button onclick="editMemo('${m.id}')" class="menu-button">편집</button><button onclick="deleteMemo('${m.id}')" class="menu-button" style="background:var(--sub-none);color:var(--text-main);">삭제</button></div></div>`;
+            return `<div class="onboarding-result-item" style="display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--divider);margin-bottom:8px;"><svg class="sticker-small" viewBox="0 0 24 24" style="fill:${color && color!=='none' ? `var(--sub-${color})` : 'var(--text-secondary)'}"><path d="${emoji}"/></svg><div style="flex:1;"><div style="font-weight:800">${m.subject} <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${m.date}</span></div><div style="font-size:13px;color:var(--text-secondary);">${(m.text||'').slice(0,120)}</div></div><div style="display:flex;gap:8px;flex-shrink:0;"><button onclick="editMemo('${m.id}')" class="menu-button">편집</button><button onclick="deleteMemo('${m.id}')" class="menu-button" style="background:var(--sub-none);color:var(--text-main);">삭제</button></div></div>`;
         }).join('');
         box.innerHTML = html || '<div class="empty">메모가 없습니다</div>';
     }
@@ -1711,6 +1761,8 @@
         closeMemoFormImmediate();
         renderMemoList('');
         refresh();
+        // when adding from form, close list overlay if open
+        try { document.getElementById('memoListOverlay').classList.remove('active'); } catch(e){}
     }
 
     function deleteMemo(id) {
@@ -1720,13 +1772,31 @@
         refresh();
     }
 
+    function showMemoDetails(id) {
+        const arr = loadMemos();
+        const m = arr.find(x=>x.id===id);
+        if(!m) return;
+        document.getElementById('memoDetailSubject').innerText = m.subject;
+        document.getElementById('memoDetailDate').innerText = m.date + (m.grade? ` • ${m.grade}학년 ${m.classNm}반` : '');
+        const shape = m.shape || 'star';
+        const color = m.color || '1';
+        const svg = getStickerHTML(m.classNm, m.subject);
+        document.getElementById('memoDetailSticker').innerHTML = svg;
+        document.getElementById('memoDetailText').innerText = m.text || '';
+        document.getElementById('memoDetailOverlay').classList.add('active');
+    }
+
+    function closeMemoDetail(event) {
+        if(event && event.target && event.target.id !== 'memoDetailOverlay') return;
+        document.getElementById('memoDetailOverlay').classList.remove('active');
+    }
+
     function editMemo(id) {
-        // simple edit: open form populated
+        // open form populated for editing (overwrite on save)
         const arr = loadMemos();
         const m = arr.find(x=>x.id===id);
         if(!m) return;
         document.getElementById('memo-date-display').value = m.date;
-        // populate subjects
         const g = document.getElementById('grade-select').value;
         fetchGradeSubjectList(g).then(list => {
             const subjBox = document.getElementById('memo-subject-select');
@@ -1739,6 +1809,7 @@
         updateFormStickerPreview();
         // remove original and will add new on save
         saveMemos(arr.filter(x=>x.id!==id));
+        document.getElementById('memoListOverlay').classList.remove('active');
         document.getElementById('memoFormOverlay').classList.add('active');
     }
 
@@ -1758,9 +1829,12 @@
             const pathStar = 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z';
             const pathHeart = 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z';
             const pathTri = 'M12 4l8 14H4z';
-            const d = shape === 'star' ? pathStar : shape === 'heart' ? pathHeart : pathTri;
+            const d = shape === 'star' ? pathStar : shape === 'heart' ? pathHeart : shape === 'triangle' ? pathTri : shape === 'circle' ? '<circle cx="12" cy="12" r="8"/>' : '<rect x="4" y="4" width="16" height="16" rx="2"/>';
             const fill = cid && cid !== 'none' ? `var(--sub-${cid})` : 'var(--text-secondary)';
-            return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;"><path d="${d}"/></svg>`;
+            if(shape === 'circle' || shape === 'square') {
+                return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;">${d}</svg>`;
+            }
+            return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;cursor:pointer;" onclick="handleStickerClick('${classNm.replace(/'/g,"\\'")}','${(subject||'').replace(/'/g,"\\'")}')">${shape === 'circle' || shape === 'square' ? d : `<path d="${d}"/>`}</svg>`;
         } catch(e) { return ''; }
     }
 
