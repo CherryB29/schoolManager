@@ -222,8 +222,28 @@
         .moving-pool-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
         .moving-pool-note { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5; }
         .moving-grid-scroll { overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 180px; padding-bottom: 10px; }
-        .moving-chip { background: var(--bg-color); padding: 10px 6px; border-radius: 0; text-align: center; cursor: pointer; border: 1px solid transparent; min-width: 0; }
-        .moving-chip.active { border-color: var(--accent-blue); background: rgba(49, 130, 246, 0.08); }
+        .moving-chip {
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 10px 6px;
+            border-radius: 0;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.08);
+            min-width: 0;
+        }
+        .moving-chip:hover {
+            background: rgba(255,255,255,0.12);
+        }
+        .moving-chip.active {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.18);
+            color: var(--text-main);
+        }
+        .moving-chip > *:first-child,
+        .moving-chip > *:last-child {
+            color: inherit;
+        }
         .moving-chip > *:first-child { font-weight: 500; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .moving-chip > *:last-child { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
