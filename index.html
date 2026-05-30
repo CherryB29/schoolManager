@@ -370,40 +370,55 @@
 </div>
 </div>
 
-<!-- Memo Popup Overlay -->
-<div class="calendar-overlay" id="memoOverlay" onclick="closeMemoPopup(event)">
+<!-- Memo List Overlay -->
+<div class="calendar-overlay" id="memoListOverlay" onclick="closeMemoList(event)">
     <div class="calendar-modal" onclick="event.stopPropagation();">
         <div class="calendar-header">
             <div>
-                <div class="calendar-month" id="memoTitle">메모 추가</div>
-                <div class="calendar-subtitle">과목과 날짜, 스티커를 선택하고 메모를 추가하세요.</div>
+                <div class="calendar-month">메모</div>
+                <div class="calendar-subtitle">메모 검색 및 관리</div>
             </div>
             <div class="calendar-nav">
-                <button onclick="closeMemoPopup()">닫기</button>
+                <button onclick="closeMemoList()">✕</button>
             </div>
         </div>
         <div style="padding:18px;">
-            <div style="display:flex;gap:8px;margin-bottom:10px;">
-                <select id="memo-grade-select" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--divider);">
-                </select>
-                <select id="memo-class-select" style="width:120px;padding:10px;border-radius:12px;border:1px solid var(--divider);">
-                </select>
+            <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+                <input id="memo-search" placeholder="메모 검색" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--divider);" oninput="renderMemoList(this.value)" />
+                <button class="menu-button" onclick="openAddMemoForm()">새 메모 추가하기</button>
             </div>
+            <div id="memo-list" style="max-height:360px;overflow:auto;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Memo Form Overlay -->
+<div class="calendar-overlay" id="memoFormOverlay" onclick="closeMemoForm(event)">
+    <div class="calendar-modal" onclick="event.stopPropagation();">
+        <div class="calendar-header">
+            <div>
+                <div class="calendar-month" id="memoFormTitle">새 메모</div>
+                <div class="calendar-subtitle">과목과 날짜, 스티커를 선택하세요.</div>
+            </div>
+            <div class="calendar-nav">
+                <button onclick="closeMemoForm()">✕</button>
+            </div>
+        </div>
+        <div style="padding:18px;">
             <div style="margin-bottom:12px;">
                 <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">날짜</label>
-                <input type="date" id="memo-date-input" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;" />
+                <input type="text" id="memo-date-display" readonly onclick="openCalendarForMemo()" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;cursor:pointer;background:var(--card-bg);" />
             </div>
             <div style="margin-bottom:12px;">
                 <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">과목</label>
-                <select id="memo-subject-select" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;">
-                </select>
+                <select id="memo-subject-select" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;"></select>
             </div>
             <div style="margin-bottom:12px;">
                 <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">스티커 모양</label>
                 <div style="display:flex;gap:8px;margin-top:6px;">
-                    <button type="button" class="menu-button" onclick="selectStickerShape('star')">⭐ 별</button>
-                    <button type="button" class="menu-button" onclick="selectStickerShape('heart')">❤ 하트</button>
-                    <button type="button" class="menu-button" onclick="selectStickerShape('triangle')">▲ 세모</button>
+                    <button type="button" class="menu-button" id="shape-star" onclick="selectStickerShape('star')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z"/></svg></button>
+                    <button type="button" class="menu-button" id="shape-heart" onclick="selectStickerShape('heart')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z"/></svg></button>
+                    <button type="button" class="menu-button" id="shape-triangle" onclick="selectStickerShape('triangle')"><svg class="sticker-icon" viewBox="0 0 24 24"><path d="M12 4l8 14H4z"/></svg></button>
                 </div>
             </div>
             <div style="margin-bottom:12px;">
@@ -416,7 +431,7 @@
             </div>
             <div style="display:flex;gap:8px;">
                 <button class="menu-button" onclick="addMemo()">메모 추가하기</button>
-                <button class="menu-button" onclick="closeMemoPopup()" style="background:var(--sub-none);color:var(--text-main);">취소</button>
+                <button class="menu-button" onclick="closeMemoForm()" style="background:var(--sub-none);color:var(--text-main);">취소</button>
             </div>
         </div>
     </div>
@@ -1233,8 +1248,15 @@
     }
 
     function selectCalendarDate(date) {
-        const input = document.getElementById('main-date-input');
         const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        // If a calendar callback is set (e.g., memo form), call it instead of changing main date
+        if (typeof calendarCallback === 'function') {
+            try { calendarCallback(date); } catch(e) {}
+            calendarCallback = null;
+            closeCalendar({ target: document.getElementById('calendarOverlay') });
+            return;
+        }
+        const input = document.getElementById('main-date-input');
         input.value = formatted;
         closeCalendar({ target: document.getElementById('calendarOverlay') });
         onMainDateChanged();
@@ -1578,55 +1600,106 @@
     let __selectedStickerShape = 'star';
     let __selectedStickerColor = '1';
 
+    let calendarCallback = null;
+
     function openMemoPopup() {
-        // populate grade/class
-        const gradeBox = document.getElementById('memo-grade-select');
-        const classBox = document.getElementById('memo-class-select');
-        const gradeOpts = getGradeOptionsBySchoolType();
-        gradeBox.innerHTML = gradeOpts.map(g => `<option value="${g}">${g}학년</option>`).join('');
-        gradeBox.value = document.getElementById('grade-select').value;
-        // classes
-        fetchGradeClassNumbers(gradeBox.value).then(list => {
-            const classes = list && list.length ? list : Array.from({length: getDefaultClassCountBySchoolType()}, (_,i)=>String(i+1));
-            classBox.innerHTML = classes.map(c => `<option value="${c}">${c}반</option>`).join('');
-            classBox.value = document.getElementById('class-select').value || classes[0];
-        });
-        // date
-        document.getElementById('memo-date-input').value = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
-        // subjects
+        toggleSidebar();
+        renderMemoList('');
+        document.getElementById('memoListOverlay').classList.add('active');
+    }
+
+    function closeMemoList(event) {
+        if(event && event.target && event.target.id !== 'memoListOverlay') return;
+        document.getElementById('memoListOverlay').classList.remove('active');
+    }
+
+    function openAddMemoForm() {
+        // show form overlay, set defaults
+        const today = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
+        document.getElementById('memo-date-display').value = today;
+        __selectedStickerShape = 'star'; __selectedStickerColor = '1';
+        // build palette
+        const pal = document.getElementById('memo-palette');
+        pal.innerHTML = '';
+        for(let i=1;i<=7;i++){ pal.innerHTML += `<div class="color-item" data-id="${i}" style="background:var(--sub-${i});" onclick="__selectedStickerColor='${i}'; updateFormStickerPreview(); document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`; }
+        pal.innerHTML += `<div class="color-item" data-id="none" style="background:var(--sub-none);" onclick="__selectedStickerColor='none'; updateFormStickerPreview(); document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`;
+        document.querySelectorAll('#memo-palette .color-item')[0]?.classList.add('active');
+
+        // populate subjects for current grade and selected date
+        const g = document.getElementById('grade-select').value;
+        const dateStr = document.getElementById('memo-date-display').value || today;
         const subjBox = document.getElementById('memo-subject-select');
         subjBox.innerHTML = '<option>불러오는 중...</option>';
-        fetchGradeSubjectList(gradeBox.value).then(list => {
+        fetchGradeSubjectList(g).then(list => {
             const arr = list && list.length ? list : ['-'];
             subjBox.innerHTML = arr.map(s => `<option value="${s}">${s}</option>`).join('');
         }).catch(()=>{ subjBox.innerHTML = '<option>-</option>' });
 
-        // palette
-        const pal = document.getElementById('memo-palette');
-        pal.innerHTML = '';
-        for(let i=1;i<=7;i++){ pal.innerHTML += `<div class="color-item" data-id="${i}" style="background:var(--sub-${i});" onclick="__selectedStickerColor='${i}'; document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`; }
-        pal.innerHTML += `<div class="color-item" data-id="none" style="background:var(--sub-none);" onclick="__selectedStickerColor='none'; document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`;
-        // default select
-        __selectedStickerShape = 'star'; __selectedStickerColor = '1';
-        document.querySelectorAll('#memo-palette .color-item')[0]?.classList.add('active');
-
         document.getElementById('memo-text').value = '';
-        document.getElementById('memoOverlay').classList.add('active');
+        updateFormStickerPreview();
+        document.getElementById('memoFormOverlay').classList.add('active');
     }
 
-    function closeMemoPopup(event) {
-        if(event && event.target && event.target.id !== 'memoOverlay') {
-            // click inside modal
-        }
-        document.getElementById('memoOverlay').classList.remove('active');
+    function closeMemoForm(event) {
+        if(event && event.target && event.target.id !== 'memoFormOverlay') return;
+        document.getElementById('memoFormOverlay').classList.remove('active');
     }
 
-    function selectStickerShape(shape) { __selectedStickerShape = shape; }
+    function openCalendarForMemo() {
+        // set callback to receive date
+        calendarCallback = function(selectedDate){
+            const iso = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}-${String(selectedDate.getDate()).padStart(2,'0')}`;
+            document.getElementById('memo-date-display').value = iso;
+            // refresh subjects for that date
+            const g = document.getElementById('grade-select').value;
+            const subjBox = document.getElementById('memo-subject-select');
+            subjBox.innerHTML = '<option>불러오는 중...</option>';
+            fetchGradeSubjectList(g).then(list => {
+                const arr = list && list.length ? list : ['-'];
+                subjBox.innerHTML = arr.map(s => `<option value="${s}">${s}</option>`).join('');
+            }).catch(()=>{ subjBox.innerHTML = '<option>-</option>' });
+        };
+        buildCalendar(new Date(document.getElementById('memo-date-display').value + 'T00:00:00'));
+        document.getElementById('calendarOverlay').classList.add('active');
+    }
+
+    function selectStickerShape(shape) { __selectedStickerShape = shape; updateFormStickerPreview(); }
+
+    function updateFormStickerPreview() {
+        // update small active state on shape buttons and apply palette fill to SVGs
+        ['star','heart','triangle'].forEach(s => {
+            const el = document.getElementById('shape-'+s);
+            if(!el) return;
+            if(__selectedStickerShape === s) el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'; else el.style.boxShadow = 'none';
+            const svg = el.querySelector('svg');
+            if(svg) svg.style.fill = __selectedStickerColor && __selectedStickerColor !== 'none' ? `var(--sub-${__selectedStickerColor})` : 'var(--text-secondary)';
+        });
+    }
+
+    function renderMemoList(filter) {
+        const list = loadMemos();
+        const box = document.getElementById('memo-list');
+        const q = (filter||'').toLowerCase();
+        const html = list.filter(m => {
+            if(!q) return true;
+            return (m.subject||'').toLowerCase().includes(q) || (m.text||'').toLowerCase().includes(q) || (m.date||'').includes(q);
+        }).map(m => {
+            const shape = m.shape || 'star';
+            const color = m.color || '1';
+            const emoji = shape === 'star' ? 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z' : (shape === 'heart' ? 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z' : 'M12 4l8 14H4z');
+            return `<div class="onboarding-result-item" style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:10px;"><svg class="sticker-small" viewBox="0 0 24 24" style="fill:${color && color!=='none' ? `var(--sub-${color})` : 'var(--text-secondary)'}"><path d="${emoji}"/></svg><div><div style="font-weight:800">${m.subject} <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${m.date}</span></div><div style="font-size:13px;color:var(--text-secondary);">${(m.text||'').slice(0,120)}</div></div></div><div style="display:flex;gap:8px;"><button onclick="editMemo('${m.id}')" class="menu-button">편집</button><button onclick="deleteMemo('${m.id}')" class="menu-button" style="background:var(--sub-none);color:var(--text-main);">삭제</button></div></div>`;
+        }).join('');
+        box.innerHTML = html || '<div class="empty">메모가 없습니다</div>';
+    }
+
+    function closeMemoListImmediate() { document.getElementById('memoListOverlay').classList.remove('active'); }
+
+    function closeMemoFormImmediate() { document.getElementById('memoFormOverlay').classList.remove('active'); }
 
     function addMemo() {
-        const grade = document.getElementById('memo-grade-select').value;
-        const classNm = document.getElementById('memo-class-select').value;
-        const date = document.getElementById('memo-date-input').value;
+        const grade = document.getElementById('grade-select').value;
+        const classNm = document.getElementById('class-select').value;
+        const date = document.getElementById('memo-date-display').value || document.getElementById('main-date-input').value;
         const subject = document.getElementById('memo-subject-select').value;
         const text = document.getElementById('memo-text').value.trim();
         const shape = __selectedStickerShape || 'star';
@@ -1635,9 +1708,38 @@
         const memos = loadMemos();
         memos.push({ id: 'm_'+Date.now(), grade, classNm, date, subject, shape, color, text });
         saveMemos(memos);
-        closeMemoPopup();
+        closeMemoFormImmediate();
+        renderMemoList('');
         refresh();
-        alert('메모가 추가되었습니다');
+    }
+
+    function deleteMemo(id) {
+        const arr = loadMemos().filter(m => m.id !== id);
+        saveMemos(arr);
+        renderMemoList('');
+        refresh();
+    }
+
+    function editMemo(id) {
+        // simple edit: open form populated
+        const arr = loadMemos();
+        const m = arr.find(x=>x.id===id);
+        if(!m) return;
+        document.getElementById('memo-date-display').value = m.date;
+        // populate subjects
+        const g = document.getElementById('grade-select').value;
+        fetchGradeSubjectList(g).then(list => {
+            const subjBox = document.getElementById('memo-subject-select');
+            const arrS = list && list.length ? list : ['-'];
+            subjBox.innerHTML = arrS.map(s => `<option value="${s}">${s}</option>`).join('');
+            subjBox.value = m.subject;
+        }).catch(()=>{});
+        __selectedStickerShape = m.shape; __selectedStickerColor = m.color;
+        document.getElementById('memo-text').value = m.text;
+        updateFormStickerPreview();
+        // remove original and will add new on save
+        saveMemos(arr.filter(x=>x.id!==id));
+        document.getElementById('memoFormOverlay').classList.add('active');
     }
 
     function getMemosForSubject(classNm, subject) {
@@ -1653,9 +1755,12 @@
             const m = arr[0];
             const cid = m.color || '1';
             const shape = m.shape || 'star';
-            const emoji = shape === 'star' ? '⭐' : shape === 'heart' ? '❤' : '▲';
-            const style = cid && cid !== 'none' ? `background:var(--sub-${cid});color:var(--sub-txt-${cid});padding:2px 4px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;` : 'margin-right:6px;';
-            return `<span class="sticker-small" title="메모 있음" style="${style}">${emoji}</span>`;
+            const pathStar = 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z';
+            const pathHeart = 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z';
+            const pathTri = 'M12 4l8 14H4z';
+            const d = shape === 'star' ? pathStar : shape === 'heart' ? pathHeart : pathTri;
+            const fill = cid && cid !== 'none' ? `var(--sub-${cid})` : 'var(--text-secondary)';
+            return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;"><path d="${d}"/></svg>`;
         } catch(e) { return ''; }
     }
 
