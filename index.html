@@ -376,7 +376,6 @@
         <div class="calendar-header">
             <div>
                 <div class="calendar-month" id="memoDetailTitle">메모 상세</div>
-                <div class="calendar-subtitle">메모 세부 정보</div>
             </div>
             <div class="calendar-nav">
                 <button onclick="closeMemoDetail()">✕</button>
@@ -1737,7 +1736,8 @@
             const shape = m.shape || 'star';
             const color = m.color || '1';
             const emoji = shape === 'star' ? 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z' : (shape === 'heart' ? 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z' : 'M12 4l8 14H4z');
-            return `<div class="onboarding-result-item" style="display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--divider);margin-bottom:8px;"><svg class="sticker-small" viewBox="0 0 24 24" style="fill:${color && color!=='none' ? `var(--sub-${color})` : 'var(--text-secondary)'}"><path d="${emoji}"/></svg><div style="flex:1;"><div style="font-weight:800">${m.subject} <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${m.date}</span></div><div style="font-size:13px;color:var(--text-secondary);">${(m.text||'').slice(0,120)}</div></div><div style="display:flex;gap:8px;flex-shrink:0;"><button onclick="editMemo('${m.id}')" class="menu-button">편집</button><button onclick="deleteMemo('${m.id}')" class="menu-button" style="background:var(--sub-none);color:var(--text-main);">삭제</button></div></div>`;
+            const svgBody = shape === 'star' ? `<path d="M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z"/>` : shape === 'heart' ? `<path d="M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z"/>` : shape === 'triangle' ? `<path d="M12 4l8 14H4z"/>` : shape === 'circle' ? `<circle cx="12" cy="12" r="8"/>` : `<rect x="4" y="4" width="16" height="16" rx="2"/>`;
+            return `<div class="memo-card"><svg class="sticker-small" viewBox="0 0 24 24" style="fill:${color && color!=='none' ? `var(--sub-${color})` : 'var(--text-secondary)'};cursor:pointer;" onclick="editMemo('${m.id}')">${svgBody}</svg><div class="memo-card-content"><div class="memo-card-header">${m.subject} <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${m.date}</span></div><div class="memo-card-subtitle">${(m.text||'').slice(0,120)}</div></div><div class="memo-card-actions"><button onclick="editMemo('${m.id}')" class="menu-button">편집</button><button onclick="deleteMemo('${m.id}')" class="menu-button" style="background:var(--sub-none);color:var(--text-main);">삭제</button></div></div>`;
         }).join('');
         box.innerHTML = html || '<div class="empty">메모가 없습니다</div>';
     }
@@ -1826,15 +1826,17 @@
             const m = arr[0];
             const cid = m.color || '1';
             const shape = m.shape || 'star';
-            const pathStar = 'M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z';
-            const pathHeart = 'M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z';
-            const pathTri = 'M12 4l8 14H4z';
-            const d = shape === 'star' ? pathStar : shape === 'heart' ? pathHeart : shape === 'triangle' ? pathTri : shape === 'circle' ? '<circle cx="12" cy="12" r="8"/>' : '<rect x="4" y="4" width="16" height="16" rx="2"/>';
             const fill = cid && cid !== 'none' ? `var(--sub-${cid})` : 'var(--text-secondary)';
-            if(shape === 'circle' || shape === 'square') {
-                return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;">${d}</svg>`;
-            }
-            return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;cursor:pointer;" onclick="handleStickerClick('${classNm.replace(/'/g,"\\'")}','${(subject||'').replace(/'/g,"\\'")}')">${shape === 'circle' || shape === 'square' ? d : `<path d="${d}"/>`}</svg>`;
+            const svgBody = shape === 'star'
+                ? '<path d="M12 17.3l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l4.46 4.76L5.82 21z"/>'
+                : shape === 'heart'
+                    ? '<path d="M12 21s-7.33-4.93-9.5-7.08C-1 9.5 3 4 7.5 6.5 9.24 7.6 12 10 12 10s2.76-2.4 4.5-3.5C21 4 25 9.5 21.5 13.92 19.33 16.07 12 21 12 21z"/>'
+                    : shape === 'triangle'
+                        ? '<path d="M12 4l8 14H4z"/>'
+                        : shape === 'circle'
+                            ? '<circle cx="12" cy="12" r="8"/>'
+                            : '<rect x="4" y="4" width="16" height="16" rx="2"/>';
+            return `<svg class="sticker-small" viewBox="0 0 24 24" title="메모 있음" style="fill:${fill};margin-right:6px;cursor:pointer;" onclick="handleStickerClick('${classNm.replace(/'/g,"\\'")}','${(subject||'').replace(/'/g,"\\'")}')">${svgBody}</svg>`;
         } catch(e) { return ''; }
     }
 
@@ -2004,7 +2006,7 @@
                 const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
                 const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
                 const stickerHtml = getStickerHTML(currentClass, finalName);
-                html += `<li><span class="period">${p}교시</span><div class="subject-container">${stickerHtml}${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                html += `<li><span class="period">${p}교시</span><div class="subject-container"><span class="subject" style="${textStyle}">${finalName}</span>${badge}${stickerHtml}${dot}</div></li>`;
             });
             html += '</ul>';
             return html;
@@ -2080,7 +2082,7 @@
                     const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
                     const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
                     const stickerHtml = getStickerHTML(currentClass, finalName);
-                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${stickerHtml}${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                    html += `<li><span class="period">${p}교시</span><div class="subject-container"><span class="subject" style="${textStyle}">${finalName}</span>${badge}${stickerHtml}${dot}</div></li>`;
                 });
                 html += '</ul>';
                 timeBox.innerHTML = html;
