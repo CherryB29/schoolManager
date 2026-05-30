@@ -137,8 +137,7 @@
         
         /* Achromatic Minimal Moving Badge */
         .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
-        .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; margin-bottom: 6px; }
-        .meal-item:last-child { margin-bottom: 0; }
+        .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
         .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
         .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
 
@@ -251,6 +250,15 @@
         .calendar-day:hover { background: rgba(49,130,246,0.14); border-color: rgba(49,130,246,0.18); }
         .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
         .calendar-day.disabled { background: transparent; border-color: transparent; color: var(--text-secondary); cursor: default; pointer-events: none; }
+        [data-theme="dark"] .calendar-day-label { background: rgba(255,255,255,0.08); }
+        [data-theme="dark"] .calendar-day { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+        [data-theme="dark"] .calendar-day:hover { background: rgba(49,130,246,0.18); }
+        [data-theme="dark"] .calendar-day.sun { background: rgba(254,226,226,0.18); }
+        [data-theme="dark"] .calendar-day.sat { background: rgba(219,234,254,0.16); }
+        [data-theme="dark"] .meal-group { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); box-shadow: none; }
+        [data-theme="dark"] .meal-summary,
+        [data-theme="dark"] .meal-item,
+        [data-theme="dark"] .meal-label { color: var(--text-main); }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -503,7 +511,7 @@
                 <h2>오늘 시간표</h2>
                 <div id="timetable-edit-hint" class="timetable-hint">
                     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm.75 15.5h-1.5v-1.5h1.5v1.5Zm1.78-6.55-.92.92c-.42.42-.66.98-.66 1.59v.82h-1.5v-.75c0-.67.27-1.31.74-1.78l1.12-1.12c.3-.3.46-.71.46-1.14 0-.88-.72-1.6-1.6-1.6s-1.6.72-1.6 1.6H9c0-1.43 1.17-2.6 2.6-2.6s2.6 1.17 2.6 2.6c0 .59-.23 1.16-.64 1.57Z"/></svg>
-                    <span>사이드바 메뉴(<span style="font-family: monospace;">≡</span>)에서 시간표 편집으로 이동 수업 시간표를 등록하세요.</span>
+                    <span>사이드바 메뉴(<strong>☰</strong>)에서 <strong>시간표 편집</strong>으로 첫 시간표를 등록하세요.</span>
                 </div>
                 <div id="render-timetable"><div class="loading">...</div></div>
             </div>
@@ -822,7 +830,7 @@
         }
         const activeClass = String(activeClassNm || classList[0] || '1');
         const html = `
-            <div class="empty" style="grid-column: span 3; font-weight: 700;">네트워크 스캔 오류가 발생했습니다. 수동으로 이동 수업을 추가하세요.</div>
+            <div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">최근 1주일 동일 교시 데이터를 먼저 탐색한 후 수동으로 과목/반을 선택하세요.</div>
             <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
                 <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
                 <select id="manual-subject-select" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
@@ -1301,42 +1309,66 @@
         poolGrid.innerHTML = '<div class="loading" style="grid-column: span 3;">과목 리스트 동기화 중...</div>';
 
         const g = document.getElementById('grade-select').value;
+        const requestedDates = [];
+        const baseDate = new Date(`${dateStr.slice(0,4)}-${dateStr.slice(4,6)}-${dateStr.slice(6,8)}T00:00:00`);
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(baseDate);
+            d.setDate(baseDate.getDate() - i);
+            requestedDates.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`);
+        }
+
         try {
-            const res = await fetchNeis(SCHOOL_TYPE, {
+            const results = await Promise.all(requestedDates.map(apiDate => fetchNeis(SCHOOL_TYPE, {
                 Type: 'json',
                 ATPT_OFCDC_SC_CODE: ATPT_CODE,
                 SD_SCHUL_CODE: SCHUL_CODE,
-                ALL_TI_YMD: dateStr,
+                ALL_TI_YMD: apiDate,
                 GRADE: g
-            });
-            if(res[SCHOOL_TYPE]) {
-                const rawRows = res[SCHOOL_TYPE][1].row;
-                const periodRows = rawRows.filter(r => parseInt(r.PERIO) === parseInt(period));
-                periodRows.sort((a,b) => parseInt(a.CLASS_NM) - parseInt(b.CLASS_NM));
+            }).catch(() => null)));
 
-                if(periodRows.length === 0) {
-                    await renderManualMovingForm(period, activeClassNm);
-                    return;
+            const allRows = [];
+            results.forEach(res => {
+                if (res && res[SCHOOL_TYPE] && res[SCHOOL_TYPE][1] && res[SCHOOL_TYPE][1].row) {
+                    const rows = Array.isArray(res[SCHOOL_TYPE][1].row) ? res[SCHOOL_TYPE][1].row : [res[SCHOOL_TYPE][1].row];
+                    rows.forEach(r => {
+                        if (parseInt(r.PERIO) === parseInt(period)) {
+                            const sbj = String(r.ITRT_CNTNT || '').trim();
+                            if (sbj) allRows.push({ classNm: r.CLASS_NM, subject: sbj });
+                        }
+                    });
                 }
+            });
 
-                let html = '';
-                periodRows.forEach(row => {
-                    const cNm = row.CLASS_NM;
-                    const sbj = row.ITRT_CNTNT.trim();
-                    const isActive = (String(cNm) === String(activeClassNm));
-                    
-                    html += `
-                        <div class="moving-chip ${isActive ? 'active' : ''}" onclick="selectMovingSubject('${sbj}', '${cNm}')">
-                            <div>${sbj}</div>
-                            <div>${cNm}반 교실</div>
-                        </div>
-                    `;
-                });
-                poolGrid.innerHTML = html;
-            } else {
+            const uniqueMap = new Map();
+            allRows.forEach(row => {
+                const key = `${row.classNm}|${row.subject}`;
+                if (!uniqueMap.has(key)) uniqueMap.set(key, row);
+            });
+            const periodRows = Array.from(uniqueMap.values()).sort((a, b) => {
+                const classDiff = parseInt(a.classNm) - parseInt(b.classNm);
+                return classDiff || a.subject.localeCompare(b.subject, 'ko');
+            });
+
+            if (periodRows.length === 0) {
                 await renderManualMovingForm(period, activeClassNm);
+                return;
             }
-        } catch(e) {
+
+            let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">최근 1주일 동일 교시 데이터에서 찾은 결과입니다.</div>`;
+            periodRows.forEach(row => {
+                const cNm = row.classNm;
+                const sbj = row.subject;
+                const isActive = String(cNm) === String(activeClassNm);
+
+                html += `
+                    <div class="moving-chip ${isActive ? 'active' : ''}" onclick="selectMovingSubject('${sbj}', '${cNm}')">
+                        <div>${sbj}</div>
+                        <div>${cNm}반 교실</div>
+                    </div>
+                `;
+            });
+            poolGrid.innerHTML = html;
+        } catch (e) {
             await renderManualMovingForm(period, activeClassNm);
         }
     }
