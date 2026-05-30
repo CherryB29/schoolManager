@@ -83,9 +83,6 @@
         }
         .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 4px; }
         .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
-        .nav-title { display:flex; flex-direction:row; align-items:center; gap:10px; cursor: default; }
-        .nav-title .brand { font-weight:800; font-size:18px; color:var(--text-main); }
-        .nav-title .nav-sub { font-size:12px; color:var(--text-secondary); }
 
         /* Multi-Column Adaptive Layout Grid */
         main { padding: calc(80px + env(safe-area-inset-top)) 16px 28px; max-width: 480px; margin: 0 auto; transition: max-width 0.3s ease; }
@@ -373,11 +370,7 @@
 
 <nav class="nav-bar">
     <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M4 18h16v-2H4v2zm0-5h16v-2H4v2zm0-7v2h16V6H4z"/></svg></button>
-    <div class="nav-title" style="margin-left:8px;">
-        <div class="brand">다음뭐지</div>
-        <div id="nav-school-name" class="nav-sub">조회중인 학교</div>
-    </div>
-    <div style="flex:1"></div>
+    <div style="width: 26px;"></div>
 </nav>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -462,6 +455,17 @@
         <div class="schedule-setting-row">
             <label>점심시간 (분)</label>
             <input type="number" id="lunch-duration" value="60" min="40" max="90" onchange="updateScheduleSettings()">
+        </div>
+        <div class="schedule-setting-row" style="display:flex;align-items:center;gap:8px;">
+            <label style="flex:0 0 auto;">내일 시간표 알림</label>
+            <label class="switch" style="margin-left:auto;">
+                <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="schedule-setting-row">
+            <label>알림 시간</label>
+            <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()">
         </div>
     </div>
 </div>
@@ -568,7 +572,9 @@
             startTime: '09:00',
             classDuration: 50,
             breakDuration: 10,
-            lunchDuration: 60
+            lunchDuration: 60,
+            notifyEnabled: false,
+            notifyTime: '20:00'
         };
     }
 
@@ -593,6 +599,8 @@
         document.getElementById('class-duration').value = settings.classDuration;
         document.getElementById('break-duration').value = settings.breakDuration;
         document.getElementById('lunch-duration').value = settings.lunchDuration;
+        document.getElementById('notify-toggle').checked = !!settings.notifyEnabled;
+        document.getElementById('notify-time').value = settings.notifyTime || '20:00';
     }
 
     function updateTimetableHint() {
@@ -713,7 +721,7 @@
         localStorage.setItem('SCHUL_CODE', schul);
         localStorage.setItem('SCHOOL_TYPE', type);
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
-        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = SCHOOL_NAME || '조회중인 학교';
+        updateDocumentTitle();
         
         loadSettings();
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
@@ -1061,6 +1069,68 @@
         refresh();
     }
 
+    function updateDocumentTitle() {
+        document.title = SCHOOL_NAME ? `다음뭐지 - ${SCHOOL_NAME}` : '다음뭐지';
+    }
+
+    // Notification worker
+    let _notificationIntervalId = null;
+    function requestNotificationPermission() {
+        if (!('Notification' in window)) return Promise.resolve(false);
+        if (Notification.permission === 'granted') return Promise.resolve(true);
+        if (Notification.permission === 'denied') return Promise.resolve(false);
+        return Notification.requestPermission().then(p => p === 'granted');
+    }
+
+    async function showTomorrowTimetableNotification() {
+        if (!SCHUL_CODE) return;
+        const next = getNextSchoolDay(new Date());
+        if (!next) return;
+        const apiStr = `${next.getFullYear()}${String(next.getMonth()+1).padStart(2,'0')}${String(next.getDate()).padStart(2,'0')}`;
+        const g = document.getElementById('grade-select').value;
+        try {
+            const res = await fetchNeis(SCHOOL_TYPE, {
+                Type: 'json',
+                ATPT_OFCDC_SC_CODE: ATPT_CODE,
+                SD_SCHUL_CODE: SCHUL_CODE,
+                ALL_TI_YMD: apiStr,
+                GRADE: g
+            });
+            let rows = res && res[SCHOOL_TYPE] && res[SCHOOL_TYPE][1] && res[SCHOOL_TYPE][1].row ? res[SCHOOL_TYPE][1].row : [];
+            rows = Array.isArray(rows) ? rows : [rows];
+            const list = rows.map(r => `${r.PERIO}교시 ${ (r.ITRT_CNTNT||'').trim() }`).join('\n');
+            const title = `${next.getMonth()+1}월 ${next.getDate()}일 시간표`;
+            const body = list || '시간표 데이터 없음';
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body });
+            } else {
+                alert(`${title}\n\n${body}`);
+            }
+        } catch(e) {
+            console.error('notification fetch error', e);
+        }
+    }
+
+    async function startNotificationWorker() {
+        // clear existing
+        if (_notificationIntervalId) clearInterval(_notificationIntervalId);
+        const settings = scheduleSettings || getDefaultScheduleSettings();
+        if (!settings.notifyEnabled) return;
+        const ok = await requestNotificationPermission();
+        if (!ok) return;
+        // run every 30s to catch the minute
+        _notificationIntervalId = setInterval(() => {
+            const now = new Date();
+            const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const key = `LAST_NOTIFY_${SCHUL_CODE}`;
+            const last = localStorage.getItem(key) || '';
+            if (hhmm === (settings.notifyTime || '20:00') && last !== `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`) {
+                showTomorrowTimetableNotification();
+                localStorage.setItem(key, `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`);
+            }
+        }, 30000);
+    }
+
 
     async function init() {
         // 테마 로드
@@ -1085,7 +1155,7 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
-        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = SCHOOL_NAME || '조회중인 학교';
+        updateDocumentTitle();
         document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
         await fetchAndRenderClassOptions(document.getElementById('grade-select').value);
         document.getElementById('class-select').value = CLASS_NM;
@@ -1097,6 +1167,8 @@
         buildPaletteUI();
         refresh();
         setInterval(computeLiveTimeline, 1000);
+        // start notification worker if enabled
+        startNotificationWorker();
     }
 
     let calendarCurrentDate = new Date();
@@ -1875,14 +1947,20 @@
         const classDuration = parseInt(document.getElementById('class-duration').value, 10);
         const breakDuration = parseInt(document.getElementById('break-duration').value, 10);
         const lunchDuration = parseInt(document.getElementById('lunch-duration').value, 10);
+        const notifyEnabled = !!document.getElementById('notify-toggle').checked;
+        const notifyTime = document.getElementById('notify-time').value || '20:00';
         const settings = {
             startTime,
             classDuration: Number.isNaN(classDuration) ? 50 : classDuration,
             breakDuration: Number.isNaN(breakDuration) ? 10 : breakDuration,
-            lunchDuration: Number.isNaN(lunchDuration) ? 60 : lunchDuration
+            lunchDuration: Number.isNaN(lunchDuration) ? 60 : lunchDuration,
+            notifyEnabled,
+            notifyTime
         };
         saveScheduleSettings(settings);
         computeLiveTimeline();
+        // restart notification worker when settings change
+        startNotificationWorker();
         console.log('스케줄 설정 저장:', settings);
     }
     let sidebarSearchTimeout = null;
@@ -1925,7 +2003,7 @@
         localStorage.removeItem('CLASS_NM');
         CLASS_NM = null;
         document.getElementById('meta-school-name').innerText = name;
-        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = name || '조회중인 학교';
+        updateDocumentTitle();
         closeSearchSheet();
         loadSettings();
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
