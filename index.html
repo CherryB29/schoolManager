@@ -417,15 +417,20 @@
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="menu-row" style="align-items:center;">
-            <span>내일 시간표 알림</span>
-            <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <div class="menu-row" style="align-items:flex-start;">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z" fill="currentColor"/><path d="M18.29 16.29L17 15V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S9.5 3.17 9.5 4v.68C6.63 5.36 5 7.92 5 11v4l-1.29 1.29A.996.996 0 004 18h16c.26 0 .52-.1.71-.29.39-.39.39-1.02 0-1.41z" fill="currentColor"/></svg>
-                <label class="switch">
-                    <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
-                    <span class="slider"></span>
-                </label>
-                <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()" style="width:84px;">
+                <span style="font-weight:600;">다음 등교일 알림</span>
+            </div>
+            <div style="margin-left:auto; display:flex; align-items:flex-start; gap:8px; flex-direction:column;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <label class="switch">
+                        <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
+                        <span class="slider"></span>
+                    </label>
+                    <label style="font-size:13px; color:var(--text-muted);">시간 설정 (on/off)</label>
+                </div>
+                <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()" style="width:120px; margin-top:6px;">
             </div>
         </div>
         <div class="menu-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
@@ -1083,7 +1088,7 @@
         return Notification.requestPermission().then(p => p === 'granted');
     }
 
-    async function showTomorrowTimetableNotification() {
+    async function showNextSchoolDayNotification() {
         if (!SCHUL_CODE) return;
         const next = getNextSchoolDay(new Date());
         if (!next) return;
@@ -1100,7 +1105,7 @@
             let rows = res && res[SCHOOL_TYPE] && res[SCHOOL_TYPE][1] && res[SCHOOL_TYPE][1].row ? res[SCHOOL_TYPE][1].row : [];
             rows = Array.isArray(rows) ? rows : [rows];
             const list = rows.map(r => `${r.PERIO}교시 ${ (r.ITRT_CNTNT||'').trim() }`).join('\n');
-            const title = `${next.getMonth()+1}월 ${next.getDate()}일 시간표`;
+            const title = `다음 등교일 ${next.getMonth()+1}월 ${next.getDate()}일 시간표`;
             const body = list || '시간표 데이터 없음';
             if (Notification.permission === 'granted') {
                 new Notification(title, { body });
@@ -1126,7 +1131,7 @@
             const key = `LAST_NOTIFY_${SCHUL_CODE}`;
             const last = localStorage.getItem(key) || '';
             if (hhmm === (settings.notifyTime || '20:00') && last !== `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`) {
-                showTomorrowTimetableNotification();
+                showNextSchoolDayNotification();
                 localStorage.setItem(key, `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`);
             }
         }, 30000);
