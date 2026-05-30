@@ -417,6 +417,17 @@
                 <span class="slider"></span>
             </label>
         </div>
+        <div class="menu-row" style="align-items:center;">
+            <span>내일 시간표 알림</span>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z" fill="currentColor"/><path d="M18.29 16.29L17 15V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S9.5 3.17 9.5 4v.68C6.63 5.36 5 7.92 5 11v4l-1.29 1.29A.996.996 0 004 18h16c.26 0 .52-.1.71-.29.39-.39.39-1.02 0-1.41z" fill="currentColor"/></svg>
+                <label class="switch">
+                    <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
+                    <span class="slider"></span>
+                </label>
+                <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()" style="width:84px;">
+            </div>
+        </div>
         <div class="menu-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
             <button class="menu-button" onclick="downloadBackup()">데이터 백업</button>
             <button class="menu-button" onclick="triggerImportBackup()">데이터 불러오기</button>
@@ -456,17 +467,7 @@
             <label>점심시간 (분)</label>
             <input type="number" id="lunch-duration" value="60" min="40" max="90" onchange="updateScheduleSettings()">
         </div>
-        <div class="schedule-setting-row" style="display:flex;align-items:center;gap:8px;">
-            <label style="flex:0 0 auto;">내일 시간표 알림</label>
-            <label class="switch" style="margin-left:auto;">
-                <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="schedule-setting-row">
-            <label>알림 시간</label>
-            <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()">
-        </div>
+        <!-- 알림 설정은 사이드바 설정으로 이동됨 -->
     </div>
 </div>
 
@@ -532,7 +533,7 @@
 
         <div class="middle-column">
             <div class="card">
-                <h2 onclick="openEditorSheet()" style="cursor:pointer;">오늘 시간표</h2>
+                <h2>오늘 시간표</h2>
                 <div id="timetable-edit-hint" class="timetable-hint">
                     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm.75 15.5h-1.5v-1.5h1.5v1.5Zm1.78-6.55-.92.92c-.42.42-.66.98-.66 1.59v.82h-1.5v-.75c0-.67.27-1.31.74-1.78l1.12-1.12c.3-.3.46-.71.46-1.14 0-.88-.72-1.6-1.6-1.6s-1.6.72-1.6 1.6H9c0-1.43 1.17-2.6 2.6-2.6s2.6 1.17 2.6 2.6c0 .59-.23 1.16-.64 1.57Z"/></svg>
                     <span>사이드바 메뉴(<strong>☰</strong>)에서 <strong>시간표 편집</strong>으로 첫 시간표를 등록하세요.</span>
