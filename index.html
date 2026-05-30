@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>다음 뭐임?</title>
+    <title>다음뭐지</title>
     <link id="favicon-link" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='85' font-size='90'%3E%F0%9F%8F%AB%3C/text%3E%3C/svg%3E">
     <script>
         (function() {
@@ -83,6 +83,9 @@
         }
         .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 4px; }
         .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
+        .nav-title { display:flex; flex-direction:row; align-items:center; gap:10px; cursor: default; }
+        .nav-title .brand { font-weight:800; font-size:18px; color:var(--text-main); }
+        .nav-title .nav-sub { font-size:12px; color:var(--text-secondary); }
 
         /* Multi-Column Adaptive Layout Grid */
         main { padding: calc(80px + env(safe-area-inset-top)) 16px 28px; max-width: 480px; margin: 0 auto; transition: max-width 0.3s ease; }
@@ -370,7 +373,11 @@
 
 <nav class="nav-bar">
     <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M4 18h16v-2H4v2zm0-5h16v-2H4v2zm0-7v2h16V6H4z"/></svg></button>
-    <div style="width: 26px;"></div>
+    <div class="nav-title" style="margin-left:8px;">
+        <div class="brand">다음뭐지</div>
+        <div id="nav-school-name" class="nav-sub">조회중인 학교</div>
+    </div>
+    <div style="flex:1"></div>
 </nav>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -706,6 +713,7 @@
         localStorage.setItem('SCHUL_CODE', schul);
         localStorage.setItem('SCHOOL_TYPE', type);
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
+        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = SCHOOL_NAME || '조회중인 학교';
         
         loadSettings();
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
@@ -1077,6 +1085,7 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         loadSettings();
         document.getElementById('meta-school-name').innerText = SCHOOL_NAME || '-';
+        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = SCHOOL_NAME || '조회중인 학교';
         document.getElementById('grade-select').value = localStorage.getItem('G_VAL') || '3';
         await fetchAndRenderClassOptions(document.getElementById('grade-select').value);
         document.getElementById('class-select').value = CLASS_NM;
@@ -1916,6 +1925,7 @@
         localStorage.removeItem('CLASS_NM');
         CLASS_NM = null;
         document.getElementById('meta-school-name').innerText = name;
+        if(document.getElementById('nav-school-name')) document.getElementById('nav-school-name').innerText = name || '조회중인 학교';
         closeSearchSheet();
         loadSettings();
         updateClassOptions();  // 학교 변경 시 반 옵션 업데이트
