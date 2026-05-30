@@ -301,8 +301,9 @@
         .onboarding-btn {
             color: white;
         }
-        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 720px; width: 100%; min-height: 520px; max-height: min(90vh, 640px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 100%; width: 100%; min-height: 520px; max-height: min(90vh, 800px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
         .onboarding-overlay { padding: 16px 18px; }
+        #classSelectContent { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .onboarding-results { margin-bottom: 12px; height: 280px; max-height: 280px; min-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .onboarding-search { display: flex; width: 100%; margin-bottom: 18px; }
         .search-field { width: 100%; }
@@ -483,7 +484,7 @@
 <div class="onboarding-overlay" id="classSelectModal" style="display: none; z-index: 10000;">
     <div class="onboarding-card">
         <h2>반을 선택하세요</h2>
-        <div id="classSelectContent" class="onboarding-grid" style="overflow-y: auto; flex: 1;"><div class="loading">로딩 중...</div></div>
+        <div id="classSelectContent" class="onboarding-grid" style="max-height: 300px; overflow-y: auto;"><div class="loading">로딩 중...</div></div>
     </div>
 </div>
 
@@ -524,8 +525,8 @@
             <div class="card">
                 <h2>오늘 시간표</h2>
                 <div id="timetable-edit-hint" class="timetable-hint">
-                    <svg viewBox="0 0 24 24" style="font-weight: 300;"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm.75 15.5h-1.5v-1.5h1.5v1.5Zm1.78-6.55-.92.92c-.42.42-.66.98-.66 1.59v.82h-1.5v-.75c0-.67.27-1.31.74-1.78l1.12-1.12c.3-.3.46-.71.46-1.14 0-.88-.72-1.6-1.6-1.6s-1.6.72-1.6 1.6H9c0-1.43 1.17-2.6 2.6-2.6s2.6 1.17 2.6 2.6c0 .59-.23 1.16-.64 1.57Z"/></svg>
-                    <span>사이드바 메뉴(<strong>☰</strong>)에서 <strong>시간표 편집</strong>으로 이동수업 시간표를 등록하세요.</span>
+                    <svg viewBox="0 0 24 24" style="stroke: currentColor; stroke-width: 1.5; fill: none;"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <span>사이드바 메뉴(<strong>≡</strong>)에서 <strong>시간표 편집</strong>으로 이동수업 시간표를 등록하세요.</span>
                 </div>
                 <div id="render-timetable"><div class="loading">...</div></div>
             </div>
@@ -845,27 +846,30 @@
         }
         const activeClass = String(activeClassNm || classList[0] || '1');
         const html = `
-            <div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary); text-align: left;">⚠️ 네트워크 스캔 오류로 인해 자동 조회가 불가능합니다. 아래에서 수동으로 과목과 분반을 추가해주세요.</div>
+            <div class="empty" style="grid-column: span 3; margin-bottom: 12px; font-weight: 700; color: var(--text-main); text-align: left;">네트워크 스캔 오류</div>
+            <div class="empty" style="grid-column: span 3; margin-bottom: 16px; font-weight: 500; color: var(--text-secondary); text-align: left; line-height: 1.5;">학교 서버에서 데이터를 조회할 수 없어 수동으로 과목과 분반을 추가해야 합니다. 아래에서 선택하세요.</div>
             <div style="grid-column: span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="option-node" style="flex-direction: column; gap: 6px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
                     <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
-                    <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
+                    <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
                         ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
                         <option value="_manual_add_">직접 추가</option>
                     </select>
                 </div>
-                <div class="option-node" style="flex-direction: column; gap: 6px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
                     <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">반 선택</label>
-                    <select id="manual-class-select" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
+                    <select id="manual-class-select" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
                         ${classList.map(c => `<option value="${c}" ${c === activeClass ? 'selected' : ''}>${c}반</option>`).join('')}
                     </select>
                 </div>
             </div>
-            <div id="manual-add-subject-input" style="grid-column: span 3; flex-direction: column; gap: 10px; display: none;">
-                <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
-                <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
+            <div id="manual-add-subject-input" style="grid-column: span 3; display: none;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
+                    <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
+                </div>
             </div>
-            <button onclick="addManualMovingSubject()" style="grid-column: span 3; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
+            <button onclick="addManualMovingSubject()" style="grid-column: span 3; margin-top: 8px; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
         `;
         poolGrid.innerHTML = html;
         window.manualSubjectAllClasses = classList;
@@ -879,7 +883,7 @@
         const classSelect = document.getElementById('manual-class-select');
         if(!select || !customInput || !classSelect) return;
         if(select.value === '_manual_add_') {
-            customInput.style.display = 'flex';
+            customInput.style.display = 'block';
             if(window.manualSubjectAllClasses) {
                 classSelect.innerHTML = window.manualSubjectAllClasses.map(c => `<option value="${c}">${c}반</option>`).join('');
             }
@@ -1428,24 +1432,28 @@
             });
             window.manualSubjectAllClasses = classList;
 
-            let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">아래에서 이동수업 과목과 분반을 선택하세요.</div>`;
+            let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 12px; font-weight: 700; color: var(--text-main); text-align: left;">아래에서 이동수업 과목과 분반을 선택하세요.</div>`;
             html += `
-                <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
-                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
-                    <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
-                        ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
-                        <option value="_manual_add_">직접 추가</option>
-                    </select>
+                <div style="grid-column: span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
+                        <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
+                            ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
+                            <option value="_manual_add_">직접 추가</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">반 선택</label>
+                        <select id="manual-class-select" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;"></select>
+                    </div>
                 </div>
-                <div id="manual-add-subject-input" style="grid-column: span 3; flex-direction: column; gap: 10px; display: none;">
-                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
-                    <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
+                <div id="manual-add-subject-input" style="grid-column: span 3; display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
+                        <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
+                    </div>
                 </div>
-                <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
-                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">반 선택</label>
-                    <select id="manual-class-select" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;"></select>
-                </div>
-                <button onclick="addManualMovingSubject()" style="grid-column: span 3; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
+                <button onclick="addManualMovingSubject()" style="grid-column: span 3; margin-top: 8px; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
             `;
             poolGrid.innerHTML = html;
             updateManualSubjectEntry();
