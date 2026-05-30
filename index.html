@@ -848,7 +848,7 @@
         const activeClass = String(activeClassNm || classList[0] || '1');
         const html = `
             <div class="empty" style="grid-column: span 3; margin-bottom: 12px; font-weight: 700; color: var(--text-main); text-align: left;">네트워크 스캔 오류</div>
-            <div class="empty" style="grid-column: span 3; margin-bottom: 16px; font-weight: 500; color: var(--text-secondary); text-align: left; line-height: 1.5;">학교 서버에서 데이터를 조회할 수 없어 수동으로 과목과 분반을 추가해야 합니다. 아래에서 선택하세요.</div>
+            <div class="empty" style="grid-column: span 3; margin-bottom: 16px; font-weight: 500; color: var(--text-secondary); text-align: left; line-height: 1.5;">네트워크 소실로 인해 현재 시간 데이터 조회에 실패했습니다. 일주일치 참고 데이터를 사용하여 아래에서 수동으로 과목과 분반을 선택하세요.</div>
             <div class="moving-pool-note" style="grid-column: span 3;">네트워크 소실로 인해 수동으로 분반을 선택해야 합니다.</div>
             <div style="grid-column: span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -1382,15 +1382,58 @@
         poolGrid.innerHTML = '<div class="loading" style="grid-column: span 3;">과목 리스트 동기화 중...</div>';
 
         const g = document.getElementById('grade-select').value;
-        const requestedDates = [];
-        const baseDate = new Date(`${dateStr.slice(0,4)}-${dateStr.slice(4,6)}-${dateStr.slice(6,8)}T00:00:00`);
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(baseDate);
-            d.setDate(baseDate.getDate() - i);
-            requestedDates.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`);
-        }
+        const todayApiDate = `${dateStr.slice(0,4)}${dateStr.slice(4,6)}${dateStr.slice(6,8)}`;
+        const escapeJS = value => String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, ' ');
 
         try {
+            const currentDayResult = await fetchNeis(SCHOOL_TYPE, {
+                Type: 'json',
+                ATPT_OFCDC_SC_CODE: ATPT_CODE,
+                SD_SCHUL_CODE: SCHUL_CODE,
+                ALL_TI_YMD: todayApiDate,
+                GRADE: g
+            }).catch(() => null);
+
+            const currentRows = [];
+            if (currentDayResult && currentDayResult[SCHOOL_TYPE] && currentDayResult[SCHOOL_TYPE][1] && currentDayResult[SCHOOL_TYPE][1].row) {
+                const rows = Array.isArray(currentDayResult[SCHOOL_TYPE][1].row) ? currentDayResult[SCHOOL_TYPE][1].row : [currentDayResult[SCHOOL_TYPE][1].row];
+                rows.forEach(r => {
+                    if (parseInt(r.PERIO) === parseInt(period)) {
+                        const sbj = String(r.ITRT_CNTNT || '').trim();
+                        if (sbj) currentRows.push({ classNm: r.CLASS_NM, subject: sbj });
+                    }
+                });
+            }
+
+            if (currentRows.length > 0) {
+                const classSubjectMap = {};
+                currentRows.forEach(row => {
+                    if (!classSubjectMap[row.classNm]) classSubjectMap[row.classNm] = new Set();
+                    classSubjectMap[row.classNm].add(row.subject);
+                });
+                const activeClasses = Object.keys(classSubjectMap).sort((a, b) => parseInt(a) - parseInt(b));
+                let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 12px; font-weight: 700; color: var(--text-main); text-align: left;">아래에서 해당 시간에 운영 중인 분반을 선택하세요.</div>`;
+                html += '<div class="moving-grid-scroll" style="grid-column: span 3;">';
+                activeClasses.forEach(classNm => {
+                    const subject = Array.from(classSubjectMap[classNm]).join(' / ');
+                    html += `<button type="button" class="moving-chip ${classNm === activeClassNm ? 'active' : ''}" onclick="selectMovingSubject('${escapeJS(subject)}','${escapeJS(classNm)}')" style="display:flex;flex-direction:column;align-items:center;gap:6px;min-height:72px;">`;
+                    html += `<span style="font-weight:700;">${classNm}반</span>`;
+                    html += `<span style="font-size:12px;color:var(--text-secondary);white-space:normal;line-height:1.4;">${subject}</span>`;
+                    html += '</button>';
+                });
+                html += '</div>';
+                poolGrid.innerHTML = html;
+                return;
+            }
+
+            const requestedDates = [];
+            const baseDate = new Date(`${dateStr.slice(0,4)}-${dateStr.slice(4,6)}-${dateStr.slice(6,8)}T00:00:00`);
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(baseDate);
+                d.setDate(baseDate.getDate() - i);
+                requestedDates.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`);
+            }
+
             const results = await Promise.all(requestedDates.map(apiDate => fetchNeis(SCHOOL_TYPE, {
                 Type: 'json',
                 ATPT_OFCDC_SC_CODE: ATPT_CODE,
