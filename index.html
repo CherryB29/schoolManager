@@ -222,10 +222,10 @@
         .moving-pool-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
         .moving-pool-note { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5; }
         .moving-grid-scroll { overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 180px; padding-bottom: 10px; }
-        .moving-chip { background: var(--bg-color); padding: 10px 6px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; min-width: 0; }
+        .moving-chip { background: var(--bg-color); padding: 10px 6px; border-radius: 0; text-align: center; cursor: pointer; border: 1px solid transparent; min-width: 0; }
         .moving-chip.active { border-color: var(--accent-blue); background: rgba(49, 130, 246, 0.08); }
-        .moving-chip div:first-child { font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .moving-chip div:last-child { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+        .moving-chip > *:first-child { font-weight: 500; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .moving-chip > *:last-child { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
         /* School Finder Structure Layout */
         .search-container { display: flex; width: 100%; margin-top: 12px; }
@@ -1412,12 +1412,11 @@
                     classSubjectMap[row.classNm].add(row.subject);
                 });
                 const activeClasses = Object.keys(classSubjectMap).sort((a, b) => parseInt(a) - parseInt(b));
-                let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 12px; font-weight: 700; color: var(--text-main); text-align: left;">아래에서 해당 시간에 운영 중인 분반을 선택하세요.</div>`;
-                html += '<div class="moving-grid-scroll" style="grid-column: span 3;">';
+                let html = '<div class="moving-grid-scroll" style="grid-column: span 3;">';
                 activeClasses.forEach(classNm => {
                     const subject = Array.from(classSubjectMap[classNm]).join(' / ');
                     html += `<button type="button" class="moving-chip ${classNm === activeClassNm ? 'active' : ''}" onclick="selectMovingSubject('${escapeJS(subject)}','${escapeJS(classNm)}')" style="display:flex;flex-direction:column;align-items:center;gap:6px;min-height:72px;">`;
-                    html += `<span style="font-weight:700;">${classNm}반</span>`;
+                    html += `<span style="font-weight:500;">${classNm}반</span>`;
                     html += `<span style="font-size:12px;color:var(--text-secondary);white-space:normal;line-height:1.4;">${subject}</span>`;
                     html += '</button>';
                 });
