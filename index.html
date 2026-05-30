@@ -830,12 +830,17 @@
         }
         const activeClass = String(activeClassNm || classList[0] || '1');
         const html = `
-            <div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">최근 1주일 동일 교시 데이터를 먼저 탐색한 후 수동으로 과목/반을 선택하세요.</div>
+            <div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">네트워크 문제로 자동 조회가 불가합니다. 수동으로 과목과 분반을 추가하세요.</div>
             <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
                 <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
-                <select id="manual-subject-select" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
+                <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
                     ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
+                    <option value="_manual_add_">직접 추가</option>
                 </select>
+            </div>
+            <div id="manual-add-subject-input" style="grid-column: span 3; flex-direction: column; gap: 10px; display: none;">
+                <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
+                <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
             </div>
             <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
                 <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">반 선택</label>
@@ -846,10 +851,41 @@
             <button onclick="addManualMovingSubject()" style="grid-column: span 3; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
         `;
         poolGrid.innerHTML = html;
+        window.manualSubjectAllClasses = classList;
+        window.manualSubjectClasses = {};
+        updateManualSubjectEntry();
+    }
+
+    function updateManualSubjectEntry() {
+        const select = document.getElementById('manual-subject-select');
+        const customInput = document.getElementById('manual-add-subject-input');
+        const classSelect = document.getElementById('manual-class-select');
+        if(!select || !customInput || !classSelect) return;
+        if(select.value === '_manual_add_') {
+            customInput.style.display = 'flex';
+            if(window.manualSubjectAllClasses) {
+                classSelect.innerHTML = window.manualSubjectAllClasses.map(c => `<option value="${c}">${c}반</option>`).join('');
+            }
+            return;
+        }
+        customInput.style.display = 'none';
+        updateManualClassSelect();
+    }
+
+    function updateManualClassSelect() {
+        const select = document.getElementById('manual-subject-select');
+        const classSelect = document.getElementById('manual-class-select');
+        if(!select || !classSelect) return;
+        const subject = select.value;
+        const classes = (window.manualSubjectClasses && window.manualSubjectClasses[subject]) || window.manualSubjectAllClasses || [];
+        classSelect.innerHTML = classes.map(c => `<option value="${c}">${c}반</option>`).join('');
     }
 
     function addManualMovingSubject() {
-        const subject = document.getElementById('manual-subject-select')?.value;
+        let subject = document.getElementById('manual-subject-select')?.value;
+        if(subject === '_manual_add_') {
+            subject = document.getElementById('manual-subject-input')?.value?.trim();
+        }
         const classNm = document.getElementById('manual-class-select')?.value;
         const targetFallback = cellContext.fallbackName;
         const currentClass = cellContext.classNm;
@@ -1339,35 +1375,49 @@
                 }
             });
 
-            const uniqueMap = new Map();
+            const subjectMap = {};
+            const allClasses = new Set();
             allRows.forEach(row => {
-                const key = `${row.classNm}|${row.subject}`;
-                if (!uniqueMap.has(key)) uniqueMap.set(key, row);
-            });
-            const periodRows = Array.from(uniqueMap.values()).sort((a, b) => {
-                const classDiff = parseInt(a.classNm) - parseInt(b.classNm);
-                return classDiff || a.subject.localeCompare(b.subject, 'ko');
+                if (!subjectMap[row.subject]) subjectMap[row.subject] = new Set();
+                subjectMap[row.subject].add(row.classNm);
+                allClasses.add(row.classNm);
             });
 
-            if (periodRows.length === 0) {
+            const subjects = Object.keys(subjectMap).sort((a, b) => a.localeCompare(b, 'ko'));
+            const classList = Array.from(allClasses).sort((a, b) => parseInt(a) - parseInt(b));
+
+            if (subjects.length === 0) {
                 await renderManualMovingForm(period, activeClassNm);
                 return;
             }
 
-            let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">최근 1주일 동일 교시 데이터에서 찾은 결과입니다.</div>`;
-            periodRows.forEach(row => {
-                const cNm = row.classNm;
-                const sbj = row.subject;
-                const isActive = String(cNm) === String(activeClassNm);
-
-                html += `
-                    <div class="moving-chip ${isActive ? 'active' : ''}" onclick="selectMovingSubject('${sbj}', '${cNm}')">
-                        <div>${sbj}</div>
-                        <div>${cNm}반 교실</div>
-                    </div>
-                `;
+            window.manualSubjectClasses = {};
+            subjects.forEach(subject => {
+                window.manualSubjectClasses[subject] = Array.from(subjectMap[subject]).sort((a, b) => parseInt(a) - parseInt(b));
             });
+            window.manualSubjectAllClasses = classList;
+
+            let html = `<div class="empty" style="grid-column: span 3; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary);">아래에서 이동수업 과목과 분반을 선택하세요.</div>`;
+            html += `
+                <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
+                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 선택</label>
+                    <select id="manual-subject-select" onchange="updateManualSubjectEntry()" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;">
+                        ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
+                        <option value="_manual_add_">직접 추가</option>
+                    </select>
+                </div>
+                <div id="manual-add-subject-input" style="grid-column: span 3; flex-direction: column; gap: 10px; display: none;">
+                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">과목 직접 입력</label>
+                    <input id="manual-subject-input" type="text" placeholder="과목명을 입력하세요" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;" />
+                </div>
+                <div class="option-node" style="grid-column: span 3; flex-direction: column; gap: 10px;">
+                    <label style="font-size:12px;font-weight:700;color:var(--text-secondary);">반 선택</label>
+                    <select id="manual-class-select" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--divider);background:var(--bg-color);color:var(--text-main);font-size:14px;"></select>
+                </div>
+                <button onclick="addManualMovingSubject()" style="grid-column: span 3; padding: 12px 14px; border-radius:12px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">선택한 과목 / 반 추가</button>
+            `;
             poolGrid.innerHTML = html;
+            updateManualSubjectEntry();
         } catch (e) {
             await renderManualMovingForm(period, activeClassNm);
         }
