@@ -217,6 +217,8 @@
         .palette-box { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 16px; }
         .color-item { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-item.active { border-color: var(--text-main); transform: scale(1.05); }
+        .sticker-icon { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; flex-shrink: 0; }
+        .sticker-small { width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; border-radius: 3px; font-size: 11px; margin-right:6px; }
 
         .moving-pool-section { border-top: 1px solid var(--divider); padding-top: 14px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         .moving-pool-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
@@ -368,6 +370,58 @@
 </div>
 </div>
 
+<!-- Memo Popup Overlay -->
+<div class="calendar-overlay" id="memoOverlay" onclick="closeMemoPopup(event)">
+    <div class="calendar-modal" onclick="event.stopPropagation();">
+        <div class="calendar-header">
+            <div>
+                <div class="calendar-month" id="memoTitle">메모 추가</div>
+                <div class="calendar-subtitle">과목과 날짜, 스티커를 선택하고 메모를 추가하세요.</div>
+            </div>
+            <div class="calendar-nav">
+                <button onclick="closeMemoPopup()">닫기</button>
+            </div>
+        </div>
+        <div style="padding:18px;">
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <select id="memo-grade-select" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--divider);">
+                </select>
+                <select id="memo-class-select" style="width:120px;padding:10px;border-radius:12px;border:1px solid var(--divider);">
+                </select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">날짜</label>
+                <input type="date" id="memo-date-input" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;" />
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">과목</label>
+                <select id="memo-subject-select" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;">
+                </select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">스티커 모양</label>
+                <div style="display:flex;gap:8px;margin-top:6px;">
+                    <button type="button" class="menu-button" onclick="selectStickerShape('star')">⭐ 별</button>
+                    <button type="button" class="menu-button" onclick="selectStickerShape('heart')">❤ 하트</button>
+                    <button type="button" class="menu-button" onclick="selectStickerShape('triangle')">▲ 세모</button>
+                </div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">스티커 색상</label>
+                <div id="memo-palette" style="display:flex;gap:8px;margin-top:8px;"></div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;color:var(--text-secondary);font-weight:700;">메모 내용</label>
+                <textarea id="memo-text" rows="4" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--divider);margin-top:6px;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="menu-button" onclick="addMemo()">메모 추가하기</button>
+                <button class="menu-button" onclick="closeMemoPopup()" style="background:var(--sub-none);color:var(--text-main);">취소</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <nav class="nav-bar">
     <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M4 18h16v-2H4v2zm0-5h16v-2H4v2zm0-7v2h16V6H4z"/></svg></button>
     <div style="width: 26px;"></div>
@@ -401,6 +455,10 @@
             <span>시간표 편집</span>
             <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
+        <div class="menu-row menu-clickable" onclick="openMemoPopup()">
+            <span>메모</span>
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 11h-2v5h2v-5zm0-8h-2v6h2V5z"/></svg>
+        </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-section-title">설정</div>
         <div class="menu-row">
@@ -416,22 +474,6 @@
                 <input type="checkbox" id="seconds-toggle" onchange="toggleShowSeconds(this.checked)">
                 <span class="slider"></span>
             </label>
-        </div>
-        <div class="menu-row" style="align-items:flex-start;">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z" fill="currentColor"/><path d="M18.29 16.29L17 15V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S9.5 3.17 9.5 4v.68C6.63 5.36 5 7.92 5 11v4l-1.29 1.29A.996.996 0 004 18h16c.26 0 .52-.1.71-.29.39-.39.39-1.02 0-1.41z" fill="currentColor"/></svg>
-                <span style="font-weight:600;">다음 등교일 알림</span>
-            </div>
-            <div style="margin-left:auto; display:flex; align-items:flex-start; gap:8px; flex-direction:column;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <label class="switch">
-                        <input type="checkbox" id="notify-toggle" onchange="updateScheduleSettings()">
-                        <span class="slider"></span>
-                    </label>
-                    <label style="font-size:13px; color:var(--text-muted);">시간 설정 (on/off)</label>
-                </div>
-                <input type="time" id="notify-time" value="20:00" onchange="updateScheduleSettings()" style="width:120px; margin-top:6px;">
-            </div>
         </div>
         <div class="menu-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
             <button class="menu-button" onclick="downloadBackup()">데이터 백업</button>
@@ -578,9 +620,7 @@
             startTime: '09:00',
             classDuration: 50,
             breakDuration: 10,
-            lunchDuration: 60,
-            notifyEnabled: false,
-            notifyTime: '20:00'
+            lunchDuration: 60
         };
     }
 
@@ -605,8 +645,6 @@
         document.getElementById('class-duration').value = settings.classDuration;
         document.getElementById('break-duration').value = settings.breakDuration;
         document.getElementById('lunch-duration').value = settings.lunchDuration;
-        document.getElementById('notify-toggle').checked = !!settings.notifyEnabled;
-        document.getElementById('notify-time').value = settings.notifyTime || '20:00';
     }
 
     function updateTimetableHint() {
@@ -1079,62 +1117,13 @@
         document.title = SCHOOL_NAME ? `다음뭐지 - ${SCHOOL_NAME}` : '다음뭐지';
     }
 
-    // Notification worker
-    let _notificationIntervalId = null;
-    function requestNotificationPermission() {
-        if (!('Notification' in window)) return Promise.resolve(false);
-        if (Notification.permission === 'granted') return Promise.resolve(true);
-        if (Notification.permission === 'denied') return Promise.resolve(false);
-        return Notification.requestPermission().then(p => p === 'granted');
-    }
-
-    async function showNextSchoolDayNotification() {
-        if (!SCHUL_CODE) return;
-        const next = getNextSchoolDay(new Date());
-        if (!next) return;
-        const apiStr = `${next.getFullYear()}${String(next.getMonth()+1).padStart(2,'0')}${String(next.getDate()).padStart(2,'0')}`;
-        const g = document.getElementById('grade-select').value;
-        try {
-            const res = await fetchNeis(SCHOOL_TYPE, {
-                Type: 'json',
-                ATPT_OFCDC_SC_CODE: ATPT_CODE,
-                SD_SCHUL_CODE: SCHUL_CODE,
-                ALL_TI_YMD: apiStr,
-                GRADE: g
-            });
-            let rows = res && res[SCHOOL_TYPE] && res[SCHOOL_TYPE][1] && res[SCHOOL_TYPE][1].row ? res[SCHOOL_TYPE][1].row : [];
-            rows = Array.isArray(rows) ? rows : [rows];
-            const list = rows.map(r => `${r.PERIO}교시 ${ (r.ITRT_CNTNT||'').trim() }`).join('\n');
-            const title = `다음 등교일 ${next.getMonth()+1}월 ${next.getDate()}일 시간표`;
-            const body = list || '시간표 데이터 없음';
-            if (Notification.permission === 'granted') {
-                new Notification(title, { body });
-            } else {
-                alert(`${title}\n\n${body}`);
-            }
-        } catch(e) {
-            console.error('notification fetch error', e);
-        }
-    }
-
-    async function startNotificationWorker() {
-        // clear existing
-        if (_notificationIntervalId) clearInterval(_notificationIntervalId);
-        const settings = scheduleSettings || getDefaultScheduleSettings();
-        if (!settings.notifyEnabled) return;
-        const ok = await requestNotificationPermission();
-        if (!ok) return;
-        // run every 30s to catch the minute
-        _notificationIntervalId = setInterval(() => {
-            const now = new Date();
-            const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const key = `LAST_NOTIFY_${SCHUL_CODE}`;
-            const last = localStorage.getItem(key) || '';
-            if (hhmm === (settings.notifyTime || '20:00') && last !== `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`) {
-                showNextSchoolDayNotification();
-                localStorage.setItem(key, `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`);
-            }
-        }, 30000);
+    function saveGradeClass() {
+        const grade = document.getElementById('grade-select').value;
+        const classNm = document.getElementById('class-select').value;
+        localStorage.setItem('G_VAL', grade);
+        localStorage.setItem('CLASS_NM', classNm);
+        CLASS_NM = classNm;
+        refresh();
     }
 
 
@@ -1173,8 +1162,6 @@
         buildPaletteUI();
         refresh();
         setInterval(computeLiveTimeline, 1000);
-        // start notification worker if enabled
-        startNotificationWorker();
     }
 
     let calendarCurrentDate = new Date();
@@ -1361,8 +1348,8 @@
                 
                 let style = displayName && cid !== 'none' ? `background: var(--sub-${cid}); color: var(--sub-txt-${cid}); font-weight: 700;` : '';
                 let badge = movingClass ? `<span class="grid-cell-moving">${movingClass}반</span>` : '';
-                
-                html += `<div class="grid-cell" style="${style}" onclick="openCellConfig('${apiStr}', ${d}, ${p}, '${fallbackName}')"><b>${displayName || '-'}</b>${badge}</div>`;
+                const stickerHtml = getStickerHTML(currentClass, displayName);
+                html += `<div class="grid-cell" style="${style}" onclick="openCellConfig('${apiStr}', ${d}, ${p}, '${fallbackName}')"><b>${displayName || '-'}</b>${stickerHtml}${badge}</div>`;
             }
         }
         html += '</div>';
@@ -1577,6 +1564,101 @@
         refresh();
     }   
 
+    /* --- Memo system: load/save, popup, helper --- */
+    function loadMemos() {
+        if(!SCHUL_CODE) return [];
+        try { return JSON.parse(localStorage.getItem(`MEMOS_${SCHUL_CODE}`)) || []; } catch(e){ return []; }
+    }
+
+    function saveMemos(arr) {
+        if(!SCHUL_CODE) return;
+        localStorage.setItem(`MEMOS_${SCHUL_CODE}`, JSON.stringify(arr));
+    }
+
+    let __selectedStickerShape = 'star';
+    let __selectedStickerColor = '1';
+
+    function openMemoPopup() {
+        // populate grade/class
+        const gradeBox = document.getElementById('memo-grade-select');
+        const classBox = document.getElementById('memo-class-select');
+        const gradeOpts = getGradeOptionsBySchoolType();
+        gradeBox.innerHTML = gradeOpts.map(g => `<option value="${g}">${g}학년</option>`).join('');
+        gradeBox.value = document.getElementById('grade-select').value;
+        // classes
+        fetchGradeClassNumbers(gradeBox.value).then(list => {
+            const classes = list && list.length ? list : Array.from({length: getDefaultClassCountBySchoolType()}, (_,i)=>String(i+1));
+            classBox.innerHTML = classes.map(c => `<option value="${c}">${c}반</option>`).join('');
+            classBox.value = document.getElementById('class-select').value || classes[0];
+        });
+        // date
+        document.getElementById('memo-date-input').value = document.getElementById('main-date-input').value || new Date().toISOString().slice(0,10);
+        // subjects
+        const subjBox = document.getElementById('memo-subject-select');
+        subjBox.innerHTML = '<option>불러오는 중...</option>';
+        fetchGradeSubjectList(gradeBox.value).then(list => {
+            const arr = list && list.length ? list : ['-'];
+            subjBox.innerHTML = arr.map(s => `<option value="${s}">${s}</option>`).join('');
+        }).catch(()=>{ subjBox.innerHTML = '<option>-</option>' });
+
+        // palette
+        const pal = document.getElementById('memo-palette');
+        pal.innerHTML = '';
+        for(let i=1;i<=7;i++){ pal.innerHTML += `<div class="color-item" data-id="${i}" style="background:var(--sub-${i});" onclick="__selectedStickerColor='${i}'; document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`; }
+        pal.innerHTML += `<div class="color-item" data-id="none" style="background:var(--sub-none);" onclick="__selectedStickerColor='none'; document.querySelectorAll('#memo-palette .color-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');"></div>`;
+        // default select
+        __selectedStickerShape = 'star'; __selectedStickerColor = '1';
+        document.querySelectorAll('#memo-palette .color-item')[0]?.classList.add('active');
+
+        document.getElementById('memo-text').value = '';
+        document.getElementById('memoOverlay').classList.add('active');
+    }
+
+    function closeMemoPopup(event) {
+        if(event && event.target && event.target.id !== 'memoOverlay') {
+            // click inside modal
+        }
+        document.getElementById('memoOverlay').classList.remove('active');
+    }
+
+    function selectStickerShape(shape) { __selectedStickerShape = shape; }
+
+    function addMemo() {
+        const grade = document.getElementById('memo-grade-select').value;
+        const classNm = document.getElementById('memo-class-select').value;
+        const date = document.getElementById('memo-date-input').value;
+        const subject = document.getElementById('memo-subject-select').value;
+        const text = document.getElementById('memo-text').value.trim();
+        const shape = __selectedStickerShape || 'star';
+        const color = __selectedStickerColor || '1';
+        if(!subject) { alert('과목을 선택하세요'); return; }
+        const memos = loadMemos();
+        memos.push({ id: 'm_'+Date.now(), grade, classNm, date, subject, shape, color, text });
+        saveMemos(memos);
+        closeMemoPopup();
+        refresh();
+        alert('메모가 추가되었습니다');
+    }
+
+    function getMemosForSubject(classNm, subject) {
+        if(!subject) return [];
+        const memos = loadMemos();
+        return memos.filter(m => String(m.classNm) === String(classNm) && String(m.subject) === String(subject));
+    }
+
+    function getStickerHTML(classNm, subject) {
+        try {
+            const arr = getMemosForSubject(classNm, subject);
+            if(!arr || arr.length === 0) return '';
+            const m = arr[0];
+            const cid = m.color || '1';
+            const shape = m.shape || 'star';
+            const emoji = shape === 'star' ? '⭐' : shape === 'heart' ? '❤' : '▲';
+            const style = cid && cid !== 'none' ? `background:var(--sub-${cid});color:var(--sub-txt-${cid});padding:2px 4px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;` : 'margin-right:6px;';
+            return `<span class="sticker-small" title="메모 있음" style="${style}">${emoji}</span>`;
+        } catch(e) { return ''; }
+    }
+
     /* 초 단위 갱신 시 NOW 카드 실시간 렌더링 */
     function computeLiveTimeline() {
         const clockEl = document.getElementById('now-clock');
@@ -1742,7 +1824,8 @@
                 const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
                 const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
                 const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
-                html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                const stickerHtml = getStickerHTML(currentClass, finalName);
+                html += `<li><span class="period">${p}교시</span><div class="subject-container">${stickerHtml}${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
             });
             html += '</ul>';
             return html;
@@ -1817,7 +1900,8 @@
                     const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
                     const badge = movingClass ? `<span class="badge-moving">${movingClass}반</span>` : '';
                     const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
-                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
+                    const stickerHtml = getStickerHTML(currentClass, finalName);
+                    html += `<li><span class="period">${p}교시</span><div class="subject-container">${stickerHtml}${dot}<span class="subject" style="${textStyle}">${finalName}</span>${badge}</div></li>`;
                 });
                 html += '</ul>';
                 timeBox.innerHTML = html;
@@ -1953,20 +2037,14 @@
         const classDuration = parseInt(document.getElementById('class-duration').value, 10);
         const breakDuration = parseInt(document.getElementById('break-duration').value, 10);
         const lunchDuration = parseInt(document.getElementById('lunch-duration').value, 10);
-        const notifyEnabled = !!document.getElementById('notify-toggle').checked;
-        const notifyTime = document.getElementById('notify-time').value || '20:00';
         const settings = {
             startTime,
             classDuration: Number.isNaN(classDuration) ? 50 : classDuration,
             breakDuration: Number.isNaN(breakDuration) ? 10 : breakDuration,
-            lunchDuration: Number.isNaN(lunchDuration) ? 60 : lunchDuration,
-            notifyEnabled,
-            notifyTime
+            lunchDuration: Number.isNaN(lunchDuration) ? 60 : lunchDuration
         };
         saveScheduleSettings(settings);
         computeLiveTimeline();
-        // restart notification worker when settings change
-        startNotificationWorker();
         console.log('스케줄 설정 저장:', settings);
     }
     let sidebarSearchTimeout = null;
