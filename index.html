@@ -1174,20 +1174,28 @@
 
     function changeCalendarMonth(delta) {
         calendarCurrentDate = new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() + delta, 1);
-        animateCalendarTransition(() => buildCalendar(calendarCurrentDate));
+        animateTransition(document.getElementById('calendarDaysContainer'), delta, () => buildCalendar(calendarCurrentDate));
     }
 
-    function animateCalendarTransition(updateFn) {
-        const container = document.getElementById('calendarDaysContainer');
-        if (!container) {
+    function animateTransition(element, delta, updateFn) {
+        if (!element) {
             updateFn();
-            return;
+            return Promise.resolve();
         }
-        container.classList.add('fade-out');
-        setTimeout(() => {
-            updateFn();
-            container.classList.remove('fade-out');
-        }, 180);
+        const outClass = delta > 0 ? 'slide-out-left' : 'slide-out-right';
+        const inClass = delta > 0 ? 'slide-in-right' : 'slide-in-left';
+        element.classList.add(outClass);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                element.classList.remove(outClass);
+                updateFn();
+                element.classList.add(inClass);
+                requestAnimationFrame(() => {
+                    element.classList.remove(inClass);
+                });
+                setTimeout(resolve, 260);
+            }, 180);
+        });
     }
 
     function setupSwipeNavigation() {
@@ -1208,7 +1216,7 @@
 
             el.addEventListener('pointermove', event => {
                 if (!isSwiping) return;
-                if (Math.abs(event.clientY - startY) > 60) {
+                if (Math.abs(event.clientY - startY) > 70) {
                     isSwiping = false;
                 }
             }, pointerOptions);
@@ -1219,7 +1227,7 @@
                 const dy = event.clientY - startY;
                 const elapsed = Date.now() - startTime;
                 isSwiping = false;
-                if (Math.abs(dx) > 50 && Math.abs(dy) < 80 && elapsed < 500) {
+                if (Math.abs(dx) > 60 && Math.abs(dy) < 60 && elapsed < 550) {
                     callback(dx);
                 }
             }, pointerOptions);
@@ -1228,15 +1236,15 @@
         };
 
         const calendarModal = document.querySelector('.calendar-modal');
-        const editorSheet = document.getElementById('fullSheet');
+        const editorSwipeArea = document.getElementById('editor-grid-container');
         if (calendarModal) {
             addSwipe(calendarModal, dx => {
                 if (dx > 0) changeCalendarMonth(-1);
                 else if (dx < 0) changeCalendarMonth(1);
             });
         }
-        if (editorSheet) {
-            addSwipe(editorSheet, dx => {
+        if (editorSwipeArea) {
+            addSwipe(editorSwipeArea, dx => {
                 if (dx > 0) navigateWeek(-7);
                 else if (dx < 0) navigateWeek(7);
             });
@@ -1348,8 +1356,10 @@
     }
 
     async function navigateWeek(days) {
-        editorAnchorDate.setDate(editorAnchorDate.getDate() + days);
-        await syncWeeklyMatrix();
+        await animateTransition(document.getElementById('editor-grid-container'), days, async () => {
+            editorAnchorDate.setDate(editorAnchorDate.getDate() + days);
+            await syncWeeklyMatrix();
+        });
     }
 
     async function syncWeeklyMatrix() {
