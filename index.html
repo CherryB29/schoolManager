@@ -95,12 +95,15 @@
         .nav-bar {
             position: fixed; top: 0; left: 0; width: 100%;
             background-color: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex; align-items: center; justify-content: flex-start;
             padding: 0 16px; z-index: 100; border-bottom: 1px solid var(--divider);
             padding-top: env(safe-area-inset-top); height: calc(56px + env(safe-area-inset-top));
         }
         .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 4px; }
         .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
+        .nav-brand { display: flex; align-items: center; gap: 8px; margin-left: 8px; color: var(--text-main); }
+        .nav-brand img { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; }
+        .nav-brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0; }
 
         /* Multi-Column Adaptive Layout Grid */
         main { padding: calc(80px + env(safe-area-inset-top)) 16px 28px; max-width: 480px; margin: 0 auto; transition: max-width 0.3s ease; }
@@ -119,7 +122,7 @@
         
         /* Date Title Area Line Configuration */
         .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-        .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
+        .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; white-space: nowrap; }
         .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
@@ -129,7 +132,7 @@
         .card h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-secondary); letter-spacing: -0.3px; }
         .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .card-heading h2 { margin-bottom: 18px; }
-        .share-meal-btn { position: relative; top: -3px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .share-meal-btn { position: relative; top: -3px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
         .share-meal-btn:hover { color: var(--text-main); border-color: var(--text-secondary); }
         .share-meal-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -175,8 +178,9 @@
         /* Achromatic Minimal Moving Badge */
         .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
         .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; overflow-wrap: anywhere; word-break: keep-all; }
-        .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
-        .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 12px 18px 16px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
+        .meal-group-header { display: flex; justify-content: flex-end; min-height: 28px; }
+        .meal-label { display: none; }
         .meal-allergy-note { margin: -4px 0 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
         .meal-item.allergy-warning { color: inherit; font-weight: 500; }
         .meal-item.allergy-warning .meal-allergy-number { color: inherit; }
@@ -237,10 +241,10 @@
         .sidebar-overlay.active { opacity: 1; visibility: visible; }
         .sidebar-header { padding: calc(16px + env(safe-area-inset-top)) 20px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
         .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 800; }
-        .sidebar-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .sidebar-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
-        .menu-row { background: var(--card-bg); padding: 15px; border: 1px solid var(--divider); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; }
-        .menu-button { width: 100%; border: none; background: rgba(49,130,246,0.12); color: var(--accent-blue); border-radius: 12px; padding: 12px 14px; font-weight: 600; cursor: pointer; }
+        .menu-row { background: var(--card-bg); padding: 13px 15px; border: 1px solid var(--divider); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: 500; font-size: 13px; }
+        .menu-button { width: 100%; border: none; background: rgba(49,130,246,0.12); color: var(--accent-blue); border-radius: 12px; padding: 11px 14px; font-weight: 500; cursor: pointer; }
         .menu-button:hover { background: rgba(49,130,246,0.18); }
         .sidebar-section-title { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--text-secondary); padding: 8px 0 0 4px; }
         .sidebar-divider { height: 1px; background: var(--divider); opacity: .55; border-radius: 2px; margin: 4px 0 12px; }
@@ -531,7 +535,7 @@
 
 <nav class="nav-bar">
     <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M4 18h16v-2H4v2zm0-5h16v-2H4v2zm0-7v2h16V6H4z"/></svg></button>
-    <div style="width: 26px;"></div>
+    <div class="nav-brand"><img src="app-icon.png" alt="먼지 로고"><span class="nav-brand-name">먼지</span></div>
 </nav>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -710,13 +714,7 @@
 
         <div class="right-column">
             <div class="card">
-                <div class="card-heading">
-                    <h2>급식</h2>
-                    <button class="share-meal-btn" type="button" onclick="shareMealCard()" title="급식 이미지 공유">
-                        <svg viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
-                        공유
-                    </button>
-                </div>
+                <div class="card-heading"><h2>급식</h2></div>
                 <div id="render-meal"><div class="loading">...</div></div>
             </div>
         </div>
@@ -890,7 +888,8 @@
                 }
                 return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${item.name}${markers}</div>`;
             }).join('');
-            return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
+            const safeType = String(type).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return `<div class="meal-group"><div class="meal-group-header"><button class="share-meal-btn" type="button" onclick="shareMealCard('${safeType}')" title="${type} 급식 이미지 공유" aria-label="${type} 급식 이미지 공유"><svg viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>공유</button></div>${linesHtml}</div>`;
         }).join('');
         const warningText = warningMeals.map(item => `<div>${item.name}${item.particle} 알레르기 유발 식품인 ${item.foods.join(', ')}${item.foodParticle} 포함되어있습니다.</div>`).join('');
         mealBox.innerHTML = groupsHtml + (warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '');
@@ -923,8 +922,8 @@
         return lines;
     }
 
-    async function shareMealCard() {
-        const mealTypes = Object.keys(globalMealGroups);
+    async function shareMealCard(mealType) {
+        const mealTypes = mealType && globalMealGroups[mealType] ? [mealType] : Object.keys(globalMealGroups);
         const dateValue = document.getElementById('main-date-input').value;
         if (!mealTypes.length || !dateValue) {
             alert('공유할 급식 정보가 없습니다.');
@@ -946,7 +945,7 @@
         });
         const menuLineCount = wrappedMenuLines.reduce((count, menu) => count + menu.lines.length, 0);
         const sectionCount = new Set(menuLines.map(menu => menu.type)).size;
-        const canvasHeight = Math.max(980, 520 + menuLineCount * lineHeight + sectionCount * 48);
+        const canvasHeight = Math.max(900, 470 + menuLineCount * lineHeight);
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
 
@@ -963,33 +962,22 @@
             logo.onerror = resolve;
         });
         if (logo.complete && logo.naturalWidth) {
-            context.drawImage(logo, 120, 120, 96, 96);
+            context.drawImage(logo, 110, 105, 92, 92);
         }
 
         context.fillStyle = '#191F28';
         context.font = '700 30px Pretendard, sans-serif';
-        context.fillText('먼지', 246, 165);
+        context.fillText('먼지', 222, 145);
         context.fillStyle = '#8B95A1';
         context.font = '500 22px Pretendard, sans-serif';
-        context.fillText('오늘의 급식', 246, 201);
+        context.fillText('오늘의 급식', 222, 181);
 
         context.fillStyle = '#191F28';
-        context.font = '800 54px Pretendard, sans-serif';
-        context.fillText(`${date.getMonth() + 1}월 ${date.getDate()}일`, 120, 330);
-        context.fillStyle = '#8B95A1';
-        context.font = '600 28px Pretendard, sans-serif';
-        context.fillText(dayNames[date.getDay()], 120, 375);
+        context.font = '800 48px Pretendard, sans-serif';
+        context.fillText(`${date.getMonth() + 1}월 ${date.getDate()}일 ${dayNames[date.getDay()]}`, 120, 315);
 
-        let y = 470;
-        let currentType = '';
+        let y = 420;
         for (const menu of wrappedMenuLines) {
-            if (menu.type !== currentType) {
-                currentType = menu.type;
-                context.fillStyle = '#8B95A1';
-                context.font = '700 22px Pretendard, sans-serif';
-                context.fillText(currentType, 120, y);
-                y += 48;
-            }
             context.fillStyle = '#191F28';
             context.font = '600 30px Pretendard, sans-serif';
             menu.lines.forEach(line => {
