@@ -937,9 +937,9 @@
         const context = canvas.getContext('2d');
         const canvasWidth = 1080;
         const contentWidth = 840;
-        const lineHeight = 58;
+        const lineHeight = 52;
         const wrappedMenuLines = menuLines.map(menu => ({ ...menu, lines: [] }));
-        context.font = '600 30px Pretendard, sans-serif';
+        context.font = '500 26px Pretendard, sans-serif';
         wrappedMenuLines.forEach(menu => {
             menu.lines = wrapCanvasText(context, menu.name, contentWidth);
         });
@@ -981,7 +981,7 @@
         let y = menuStartY;
         for (const menu of wrappedMenuLines) {
             context.fillStyle = '#191F28';
-            context.font = '600 30px Pretendard, sans-serif';
+            context.font = '500 26px Pretendard, sans-serif';
             menu.lines.forEach(line => {
                 context.fillText(line, 120, y);
                 y += lineHeight;
