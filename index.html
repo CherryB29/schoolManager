@@ -118,7 +118,7 @@
         .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
-        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; }
+        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
         .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -172,16 +172,21 @@
         .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
         .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
         .meal-allergy-note { margin: -4px 0 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
-        .meal-item.allergy-warning { color: #D63031; font-weight: 800; }
+        .meal-item.allergy-warning { color: inherit; font-weight: 500; }
+        .meal-item.allergy-warning .meal-allergy-number { color: inherit; }
+        .meal-item .meal-allergy-number.selected { color: #D63031; font-weight: 900; }
+        .meal-allergy-summary { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--divider); color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
         .meal-allergy-tag { display: inline-block; margin: 0 6px 6px 0; padding: 5px 8px; border-radius: 7px; background: rgba(214,48,49,0.12); color: #D63031; font-size: 11px; font-weight: 800; }
-        .sidebar-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 12px 16px 4px; background: var(--card-bg); }
-        .sidebar-tab { border: 0; border-radius: 9px; padding: 9px 4px; background: var(--bg-color); color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; }
-        .sidebar-tab.active { background: var(--accent-blue); color: white; }
+        .sidebar-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 10px 14px 8px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
+        .sidebar-tab { border: 0; border-radius: 8px; padding: 10px 4px; background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; }
+        .sidebar-tab.active { background: var(--text-main); color: var(--card-bg); }
         .sidebar-panel { display: none; flex-direction: column; gap: 12px; }
         .sidebar-panel.active { display: flex; }
         .allergy-options { display: block; }
-        .allergy-option { width: 100%; padding: 11px 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); color: var(--text-main); font-size: 13px; font-weight: 600; }
-        .allergy-option select { width: 100%; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+        .allergy-option { display: block; width: 100%; padding: 11px 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); color: var(--text-main); font-size: 13px; font-weight: 600; }
+        .allergy-option select { width: 100%; height: 38px; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+        .allergy-option select[multiple] { overflow: hidden; }
+        .allergy-option option:checked { color: var(--text-main); background: rgba(49,130,246,0.14); }
 
         @media (max-width: 899px) {
             main { max-width: 640px; padding-left: 18px; padding-right: 18px; }
@@ -387,7 +392,9 @@
         [data-theme="dark"] .meal-summary,
         [data-theme="dark"] .meal-item,
         [data-theme="dark"] .meal-label { color: var(--text-main); }
-        [data-theme="dark"] .meal-item.allergy-warning { color: #FF6B6B; }
+        [data-theme="dark"] .meal-item.allergy-warning { color: inherit; }
+        [data-theme="dark"] .meal-item .meal-allergy-number.selected { color: #FF6B6B; }
+        [data-theme="dark"] .meal-allergy-summary { color: var(--text-secondary); }
         [data-theme="dark"] .meal-allergy-tag { color: #FF8A8A; background: rgba(255,107,107,0.16); }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
@@ -550,7 +557,7 @@
         </div>
         </div>
         <div class="sidebar-panel" data-sidebar-panel="general">
-        <div class="menu-row menu-clickable" onclick="openSearchSheet()">
+        <div class="menu-row menu-clickable" onclick="openSchoolSelection()">
             <span>학교 변경</span>
             <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
@@ -801,6 +808,7 @@
     let globalTomorrowRows = [];
     let globalTomorrowMealLines = [];
     let onboardingSearchTimeout = null;
+    let navigationReady = false;
 
     function showSidebarTab(name, button) {
         document.querySelectorAll('.sidebar-panel').forEach(panel => {
@@ -813,7 +821,7 @@
     function buildAllergyOptions() {
         const box = document.getElementById('allergy-options');
         if (!box) return;
-        box.innerHTML = `<label class="allergy-option"><select multiple size="7" aria-label="알레르기 선택" onchange="updateAllergySelection(this)">${Object.entries(ALLERGY_NAMES).map(([number, name]) => `<option value="${number}" ${selectedAllergies.has(Number(number)) ? 'selected' : ''}>${number}. ${name}</option>`).join('')}</select></label>`;
+        box.innerHTML = `<label class="allergy-option"><select multiple size="1" aria-label="알레르기 선택" onchange="updateAllergySelection(this)"><option value="" disabled ${selectedAllergies.size === 0 ? 'selected' : ''}>알레르기 식품을 선택하세요</option>${Object.entries(ALLERGY_NAMES).map(([number, name]) => `<option value="${number}" ${selectedAllergies.has(Number(number)) ? 'selected' : ''}>${number}. ${name}</option>`).join('')}</select></label>`;
         const toggle = document.getElementById('allergy-toggle');
         if (toggle) toggle.checked = allergyEnabled;
     }
@@ -825,7 +833,7 @@
     }
 
     function updateAllergySelection(select) {
-        selectedAllergies = new Set([...select.selectedOptions].map(option => Number(option.value)));
+        selectedAllergies = new Set([...select.selectedOptions].map(option => Number(option.value)).filter(number => Number.isInteger(number) && number > 0));
         localStorage.setItem('ALLERGIES', JSON.stringify([...selectedAllergies]));
         renderMealGroups();
     }
@@ -839,16 +847,21 @@
         const mealBox = document.getElementById('render-meal');
         const mealTypes = Object.keys(globalMealGroups);
         if (!mealBox || mealTypes.length === 0) return;
+        const warningMeals = [];
         const groupsHtml = mealTypes.map(type => {
             const linesHtml = globalMealGroups[type].map(item => {
                 const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
-                const selectedNumbers = item.allergies.filter(number => selectedAllergies.has(number));
-                const markers = allergyEnabled && selectedNumbers.length ? ` <small>[${selectedNumbers.join(', ')}]</small>` : '';
+                const markers = allergyEnabled && item.allergies.length ? ` <small>${item.allergies.map(number => `<span class="meal-allergy-number${selectedAllergies.has(number) ? ' selected' : ''}">[${number}]</span>`).join(' ')}</small>` : '';
+                if (warning) {
+                    const foods = item.allergies.filter(number => selectedAllergies.has(number)).map(number => ALLERGY_NAMES[number]);
+                    warningMeals.push({ name: item.name, foods });
+                }
                 return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${item.name}${markers}</div>`;
             }).join('');
             return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
         }).join('');
-        mealBox.innerHTML = groupsHtml;
+        const warningText = warningMeals.map(item => `<div>[${item.name}]에는 [${item.foods.join(', ')}]이 포함되어있습니다.</div>`).join('');
+        mealBox.innerHTML = groupsHtml + (warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '');
     }
     
     function getNextSchoolDay(fromDate) {
@@ -1163,6 +1176,7 @@
         document.getElementById('onboarding-overlay').classList.add('hidden');
         localStorage.setItem('ONBOARDING_DONE', 'true');
         await updateClassOptions();  // 반 옵션 업데이트
+        setupSwipeNavigation();
         await refresh();
         setInterval(computeLiveTimeline, 1000);
     }
@@ -1342,7 +1356,7 @@
 
     function changeCalendarMonth(delta) {
         calendarCurrentDate = new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() + delta, 1);
-        animateTransition(document.getElementById('calendarDaysContainer'), delta, () => buildCalendar(calendarCurrentDate));
+        buildCalendar(calendarCurrentDate);
     }
 
     function animateTransition(element, delta, updateFn) {
@@ -1367,6 +1381,8 @@
     }
 
     function setupSwipeNavigation() {
+        if (navigationReady) return;
+        navigationReady = true;
         const pointerOptions = { passive: true };
         const addSwipe = (el, callback) => {
             let startX = 0;
@@ -1405,6 +1421,8 @@
 
         const calendarModal = document.querySelector('.calendar-modal');
         const editorSwipeArea = document.getElementById('editor-grid-container');
+        const datePicker = document.querySelector('.date-picker-wrapper');
+        let dateWheelLocked = false;
         if (calendarModal) {
             addSwipe(calendarModal, dx => {
                 if (dx > 0) changeCalendarMonth(-1);
@@ -1416,6 +1434,45 @@
                 if (dx > 0) navigateWeek(-7);
                 else if (dx < 0) navigateWeek(7);
             });
+        }
+        if (datePicker) {
+            let startDateX = 0;
+            let startDateY = 0;
+            let dateMoved = false;
+            datePicker.addEventListener('pointerdown', event => {
+                startDateX = event.clientX;
+                startDateY = event.clientY;
+                dateMoved = false;
+            }, pointerOptions);
+            datePicker.addEventListener('pointerup', event => {
+                const dx = event.clientX - startDateX;
+                const dy = event.clientY - startDateY;
+                if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+                    dateMoved = true;
+                    const input = document.getElementById('main-date-input');
+                    const current = input.value ? new Date(`${input.value}T00:00:00`) : new Date();
+                    current.setDate(current.getDate() + (dx < 0 ? 1 : -1));
+                    input.value = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+                    onMainDateChanged();
+                }
+            }, pointerOptions);
+            datePicker.addEventListener('click', event => {
+                if (dateMoved) {
+                    event.preventDefault();
+                    dateMoved = false;
+                }
+            }, true);
+            datePicker.addEventListener('wheel', event => {
+                event.preventDefault();
+                if (dateWheelLocked) return;
+                dateWheelLocked = true;
+                const input = document.getElementById('main-date-input');
+                const current = input.value ? new Date(`${input.value}T00:00:00`) : new Date();
+                current.setDate(current.getDate() + (event.deltaY > 0 ? 1 : -1));
+                input.value = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+                onMainDateChanged();
+                setTimeout(() => { dateWheelLocked = false; }, 180);
+            }, { passive: false });
         }
     }
 
@@ -2214,6 +2271,23 @@
         document.getElementById('searchSheetOverlay').classList.add('active');
         document.getElementById('searchSheet').classList.add('active');
         document.getElementById('searchSheet').style.bottom = '0';
+    }
+
+    function openSchoolSelection() {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+        document.getElementById('searchSheetOverlay').classList.remove('active');
+        document.getElementById('searchSheet').classList.remove('active');
+        document.getElementById('onboarding-query').value = '';
+        document.getElementById('onboarding-results').innerHTML = '';
+        document.getElementById('onboarding-title').innerText = '학교를 선택하세요';
+        document.getElementById('onboarding-desc').innerText = '시간표를 확인하려면 학교를 먼저 선택해주세요.';
+        document.getElementById('onboarding-content').innerHTML = `
+            <div class="onboarding-search"><div class="search-field">
+                <input type="text" id="onboarding-query" placeholder="학교명 입력" autocomplete="off" oninput="debouncedOnboardingSearchSchool()" onkeypress="if(event.key==='Enter') onboardingSearchSchool()">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div></div><div class="onboarding-results" id="onboarding-results"></div>`;
+        document.getElementById('onboarding-overlay').classList.remove('hidden');
     }
     function closeSearchSheet() {
         document.getElementById('searchSheetOverlay').classList.remove('active');
