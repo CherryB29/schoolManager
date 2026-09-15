@@ -944,8 +944,10 @@
             menu.lines = wrapCanvasText(context, menu.name, contentWidth);
         });
         const menuLineCount = wrappedMenuLines.reduce((count, menu) => count + menu.lines.length, 0);
-        const sectionCount = new Set(menuLines.map(menu => menu.type)).size;
-        const canvasHeight = Math.max(900, 470 + menuLineCount * lineHeight);
+        const menuSpacing = wrappedMenuLines.length * 8;
+        const menuStartY = 420;
+        const bottomPadding = 120;
+        const canvasHeight = Math.max(900, menuStartY + menuLineCount * lineHeight + menuSpacing + bottomPadding);
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
 
@@ -976,7 +978,7 @@
         context.font = '800 48px Pretendard, sans-serif';
         context.fillText(`${date.getMonth() + 1}월 ${date.getDate()}일 ${dayNames[date.getDay()]}`, 120, 315);
 
-        let y = 420;
+        let y = menuStartY;
         for (const menu of wrappedMenuLines) {
             context.fillStyle = '#191F28';
             context.font = '600 30px Pretendard, sans-serif';
