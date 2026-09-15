@@ -125,10 +125,11 @@
 
         /* Cards Base Style */
         .card { background-color: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.02); }
+        .card, .right-column, .middle-column, .left-column { min-width: 0; }
         .card h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-secondary); letter-spacing: -0.3px; }
         .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .card-heading h2 { margin-bottom: 18px; }
-        .share-meal-btn { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .share-meal-btn { position: relative; top: -3px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
         .share-meal-btn:hover { color: var(--text-main); border-color: var(--text-secondary); }
         .share-meal-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -173,14 +174,14 @@
         
         /* Achromatic Minimal Moving Badge */
         .badge-moving { background: var(--bg-color); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid var(--divider); }
-        .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
+        .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; overflow-wrap: anywhere; word-break: keep-all; }
         .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
         .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
         .meal-allergy-note { margin: -4px 0 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
         .meal-item.allergy-warning { color: inherit; font-weight: 500; }
         .meal-item.allergy-warning .meal-allergy-number { color: inherit; }
         .meal-item .meal-allergy-number.selected { color: #D63031; font-weight: 900; }
-        .meal-allergy-summary { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--divider); color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+        .meal-allergy-summary { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--divider); color: var(--text-secondary); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; word-break: keep-all; }
         .now-progress { margin-top: 16px; }
         .now-progress-track { height: 10px; overflow: hidden; border-radius: 999px; background: var(--divider); }
         .now-progress-fill { height: 100%; border-radius: inherit; background: var(--accent-blue); transition: width 0.4s ease; }
@@ -470,6 +471,8 @@
             .onboarding-choice-number { font-size: 38px; }
             .class-choice { min-height: 78px; }
             .class-choice .onboarding-choice-number { font-size: 29px; }
+            .class-choice { min-height: 68px; }
+            #classSelectContent { gap: 7px; }
         }
         
         
@@ -863,6 +866,14 @@
         return [...new Set(matches.flatMap(match => (match.match(/\d+/g) || []).map(Number)))].filter(number => ALLERGY_NAMES[number]);
     }
 
+    function getKoreanParticle(word, consonantParticle, vowelParticle) {
+        const lastCharacter = String(word || '').trim().slice(-1);
+        if (!lastCharacter) return vowelParticle;
+        const code = lastCharacter.charCodeAt(0);
+        if (code < 0xAC00 || code > 0xD7A3) return vowelParticle;
+        return (code - 0xAC00) % 28 ? consonantParticle : vowelParticle;
+    }
+
     function renderMealGroups() {
         const mealBox = document.getElementById('render-meal');
         const mealTypes = Object.keys(globalMealGroups);
@@ -871,16 +882,17 @@
         const groupsHtml = mealTypes.map(type => {
             const linesHtml = globalMealGroups[type].map(item => {
                 const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
-                const markers = allergyEnabled && item.allergies.length ? ` <small class="meal-allergy-numbers">(${item.allergies.map(number => `<span class="meal-allergy-number${selectedAllergies.has(number) ? ' selected' : ''}">${number}</span>`).join(', ')})</small>` : '';
+                const selectedNumbers = item.allergies.filter(number => selectedAllergies.has(number));
+                const markers = allergyEnabled && selectedNumbers.length ? ` <small class="meal-allergy-numbers">(${selectedNumbers.map(number => `<span class="meal-allergy-number selected">${number}</span>`).join(', ')})</small>` : '';
                 if (warning) {
                     const foods = item.allergies.filter(number => selectedAllergies.has(number)).map(number => ALLERGY_NAMES[number]);
-                    warningMeals.push({ name: item.name, foods });
+                    warningMeals.push({ name: item.name, foods, particle: getKoreanParticle(item.name, '은', '는'), foodParticle: getKoreanParticle(foods[foods.length - 1], '이', '가') });
                 }
                 return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${item.name}${markers}</div>`;
             }).join('');
             return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
         }).join('');
-        const warningText = warningMeals.map(item => `<div>${item.name}에는 알레르기 유발 식품인 ${item.foods.join(', ')}가 포함되어있습니다.</div>`).join('');
+        const warningText = warningMeals.map(item => `<div>${item.name}${item.particle} 알레르기 유발 식품인 ${item.foods.join(', ')}${item.foodParticle} 포함되어있습니다.</div>`).join('');
         mealBox.innerHTML = groupsHtml + (warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '');
     }
 
@@ -927,7 +939,14 @@
         const canvasWidth = 1080;
         const contentWidth = 840;
         const lineHeight = 58;
-        const canvasHeight = Math.max(980, 390 + menuLines.length * lineHeight);
+        const wrappedMenuLines = menuLines.map(menu => ({ ...menu, lines: [] }));
+        context.font = '600 30px Pretendard, sans-serif';
+        wrappedMenuLines.forEach(menu => {
+            menu.lines = wrapCanvasText(context, menu.name, contentWidth);
+        });
+        const menuLineCount = wrappedMenuLines.reduce((count, menu) => count + menu.lines.length, 0);
+        const sectionCount = new Set(menuLines.map(menu => menu.type)).size;
+        const canvasHeight = Math.max(980, 520 + menuLineCount * lineHeight + sectionCount * 48);
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
 
@@ -963,7 +982,7 @@
 
         let y = 470;
         let currentType = '';
-        for (const menu of menuLines) {
+        for (const menu of wrappedMenuLines) {
             if (menu.type !== currentType) {
                 currentType = menu.type;
                 context.fillStyle = '#8B95A1';
@@ -973,8 +992,7 @@
             }
             context.fillStyle = '#191F28';
             context.font = '600 30px Pretendard, sans-serif';
-            const lines = wrapCanvasText(context, menu.name, contentWidth);
-            lines.forEach(line => {
+            menu.lines.forEach(line => {
                 context.fillText(line, 120, y);
                 y += lineHeight;
             });
