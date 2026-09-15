@@ -179,9 +179,9 @@
         .sidebar-tab.active { background: var(--accent-blue); color: white; }
         .sidebar-panel { display: none; flex-direction: column; gap: 12px; }
         .sidebar-panel.active { display: flex; }
-        .allergy-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .allergy-option { display: flex; align-items: center; gap: 7px; padding: 10px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); font-size: 12px; font-weight: 600; }
-        .allergy-option input { accent-color: var(--accent-blue); }
+        .allergy-options { display: block; }
+        .allergy-option { width: 100%; padding: 11px 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); color: var(--text-main); font-size: 13px; font-weight: 600; }
+        .allergy-option select { width: 100%; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 
         @media (max-width: 899px) {
             main { max-width: 640px; padding-left: 18px; padding-right: 18px; }
@@ -198,6 +198,18 @@
             .date-hint { display: block; margin: 6px 0 0; }
             .card { padding: 18px; }
             .now-clock { font-size: 24px; }
+        }
+
+        @media (max-width: 600px) {
+            .full-sheet { max-height: calc(100vh - 12px); border-radius: 18px 18px 0 0; }
+            .sheet-header { padding: 11px 12px; gap: 4px; }
+            .sheet-header > div:first-child { flex: 0 0 auto !important; }
+            .sheet-header > div:first-child button { padding: 8px 9px !important; font-size: 11px !important; }
+            .week-navigator { gap: 4px !important; padding: 4px !important; font-size: 13px; }
+            .nav-arrow { padding: 4px 7px; }
+            .sheet-body { max-height: calc(100vh - 190px); padding: 7px 6px; }
+            .schedule-settings { margin-top: 0; padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); gap: 8px; }
+            .schedule-setting-row input { padding: 9px 10px; }
         }
 
         /* Sidebar Settings Layout */
@@ -228,14 +240,14 @@
 
         /* Timetable Week Grid Modal */
         .full-sheet-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-bg); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000; }
-        .full-sheet { position: fixed; bottom: -100vh; left: 0; width: 100%; height: 88vh; background: var(--bg-color); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 2001; transition: bottom 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); display: flex; flex-direction: column; overflow: hidden; }
+        .full-sheet { position: fixed; bottom: -100vh; left: 0; width: 100%; height: auto; max-height: 92vh; background: var(--bg-color); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 2001; transition: bottom 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); display: flex; flex-direction: column; overflow: hidden; }
         .full-sheet.active { bottom: 0; }
         .full-sheet-overlay.active { opacity: 1; visibility: visible; }
         .sheet-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
         .week-navigator { display: flex; align-items: center; gap: 16px; padding: 6px 14px; font-weight: 700; font-size: 14px; }
         .nav-arrow { background: none; border: none; cursor: pointer; font-size: 16px; font-weight: 800; color: var(--text-main); }
 
-        .sheet-body { flex: 1; overflow: auto; padding: 10px; }
+        .sheet-body { flex: 0 1 auto; max-height: calc(92vh - 190px); overflow: auto; padding: 10px; }
         .grid-matrix { display: grid; grid-template-columns: 32px repeat(5, minmax(0, 1fr)); gap: 3px; }
         .grid-lbl { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 6px 0; }
         
@@ -316,22 +328,36 @@
         .onboarding-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); opacity: 1; visibility: visible; transition: 0.3s; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; }
         .onboarding-overlay.class-select { z-index: 10000; }
         .onboarding-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
-        .onboarding-card h2 { font-size: 22px; font-weight: 600; margin: 0 0 12px 0; color: var(--text-main); }
-        .onboarding-card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.6; font-weight: 500; }
-        .calendar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 10002; display: none; align-items: center; justify-content: center; padding: 16px; }
+        .onboarding-card { position: relative; overflow: hidden; background: var(--card-bg); border-radius: 24px; padding: 38px; max-width: 520px; width: 100%; box-shadow: 0 16px 50px rgba(15,23,42,0.14); border: 1px solid var(--divider); text-align: center; }
+        .onboarding-card::before { display: none; }
+        .onboarding-brand { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 30px; }
+        .onboarding-brand img { width: 112px; height: 112px; border-radius: 28px; object-fit: cover; box-shadow: 0 10px 22px rgba(49,130,246,0.2); }
+        .onboarding-brand-name { font-size: 21px; font-weight: 800; color: var(--text-main); letter-spacing: 0.02em; }
+        .onboarding-brand-step { margin-top: 4px; color: var(--text-secondary); font-size: 14px; font-weight: 600; }
+        .onboarding-card h2, .onboarding-card p { display: none; }
+        .onboarding-choice-grid { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .onboarding-choice { position: relative; min-height: 124px; align-items: center; justify-content: center; padding: 18px; border-radius: 16px; background: var(--bg-color); border: 1px solid var(--divider); color: var(--text-main); overflow: hidden; transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+        .onboarding-choice::before { content: ''; position: absolute; top: -18px; right: -12px; width: 58px; height: 58px; border-radius: 50%; background: rgba(49,130,246,0.12); }
+        .onboarding-choice:hover { transform: translateY(-2px); border-color: var(--text-main); background: var(--card-bg); }
+        .onboarding-choice-number { position: relative; display: block; font-size: 44px; line-height: 1; font-weight: 850; color: var(--text-main); }
+        .onboarding-choice-label { position: relative; display: block; margin-top: 7px; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+        .class-choice-grid { grid-template-columns: repeat(4, 1fr); max-height: 330px; overflow-y: auto; padding: 2px; }
+        .class-choice { min-height: 86px; align-items: center; justify-content: center; padding: 12px; }
+        .class-choice .onboarding-choice-number { font-size: 32px; }
+        .class-choice .onboarding-choice-label { margin-top: 4px; }
+        .calendar-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.48); z-index: 10002; display: none; align-items: center; justify-content: center; padding: 20px; }
         .calendar-overlay.active { display: flex; }
-        .calendar-modal { width: min(440px,100%); background: var(--card-bg); border-radius: 22px; box-shadow: 0 24px 60px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid rgba(0,0,0,0.08); }
-        .calendar-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 22px 16px; background: var(--card-bg); }
-        .calendar-month { font-size: 18px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
-        .calendar-subtitle { margin-top: 6px; font-size: 13px; color: var(--text-secondary); }
-        .calendar-nav { display: flex; gap: 10px; }
+        .calendar-modal { width: min(400px,100%); background: var(--card-bg); border-radius: 18px; box-shadow: 0 20px 55px rgba(0,0,0,0.22); overflow: hidden; border: 1px solid var(--divider); }
+        .calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
+        .calendar-month { font-size: 19px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+        .calendar-subtitle { margin-top: 5px; font-size: 12px; color: var(--text-secondary); }
+        .calendar-nav { display: flex; gap: 2px; }
         .calendar-nav button {
             border: none;
             background: transparent;
             color: var(--text-main);
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             cursor: pointer;
             font-size: 18px;
             font-weight: 800;
@@ -340,20 +366,20 @@
         }
         .calendar-nav button:hover { transform: translateY(-1px); color: var(--accent-blue); }
         .calendar-modal, .full-sheet { touch-action: pan-y; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 18px 18px; background: transparent; transition: opacity 0.24s ease; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 14px 16px 16px; background: transparent; transition: opacity 0.24s ease; }
         .calendar-grid.fade-out { opacity: 0.2; }
-        .calendar-day-label, .calendar-day { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; min-height: 44px; }
-        .calendar-day-label { color: var(--text-secondary); background: rgba(248,250,252,0.95); border-radius: 0; font-weight: 800; }
+        .calendar-day-label, .calendar-day { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; min-height: 42px; }
+        .calendar-day-label { color: var(--text-secondary); background: transparent; border-radius: 8px; font-weight: 700; }
         .calendar-day-label.sun { color: #EF4444; }
         .calendar-day-label.sat { color: #2563EB; }
-        .calendar-day { background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.08); border-radius: 0; cursor: pointer; color: var(--text-main); font-weight: 700; transition: background 0.15s ease, border-color 0.15s ease; }
-        .calendar-day.sun { color: #EF4444; background: rgba(254,226,226,0.75); }
-        .calendar-day.sat { color: #2563EB; background: rgba(219,234,254,0.9); }
-        .calendar-day:hover { background: rgba(49,130,246,0.14); border-color: rgba(49,130,246,0.18); }
+        .calendar-day { background: transparent; border: 1px solid transparent; border-radius: 10px; cursor: pointer; color: var(--text-main); font-weight: 700; transition: background 0.15s ease, border-color 0.15s ease; }
+        .calendar-day.sun { color: #D63031; }
+        .calendar-day.sat { color: #2563EB; }
+        .calendar-day:hover { background: rgba(49,130,246,0.10); border-color: rgba(49,130,246,0.18); }
         .calendar-day.selected { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
         .calendar-day.disabled { background: transparent; border-color: transparent; color: var(--text-secondary); cursor: default; pointer-events: none; }
-        [data-theme="dark"] .calendar-day-label { background: rgba(255,255,255,0.08); }
-        [data-theme="dark"] .calendar-day { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+        [data-theme="dark"] .calendar-day-label { background: transparent; }
+        [data-theme="dark"] .calendar-day { background: transparent; border-color: transparent; }
         [data-theme="dark"] .calendar-day:hover { background: rgba(49,130,246,0.18); }
         [data-theme="dark"] .calendar-day.sun { background: rgba(254,226,226,0.18); }
         [data-theme="dark"] .calendar-day.sat { background: rgba(219,234,254,0.16); }
@@ -361,6 +387,8 @@
         [data-theme="dark"] .meal-summary,
         [data-theme="dark"] .meal-item,
         [data-theme="dark"] .meal-label { color: var(--text-main); }
+        [data-theme="dark"] .meal-item.allergy-warning { color: #FF6B6B; }
+        [data-theme="dark"] .meal-allergy-tag { color: #FF8A8A; background: rgba(255,107,107,0.16); }
         .onboarding-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider); background: var(--bg-color); color: var(--text-main); font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .onboarding-select:focus { outline: 2px solid var(--accent-blue); }
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -390,9 +418,9 @@
         .onboarding-btn {
             color: white;
         }
-        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 28px; max-width: 100%; width: 100%; min-height: 520px; max-height: min(90vh, 800px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 38px; max-width: 520px; width: 100%; min-height: 0; max-height: min(90vh, 800px); box-shadow: 0 16px 50px rgba(15,23,42,0.14); }
         .onboarding-overlay { padding: 16px 18px; }
-        #classSelectContent { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        #classSelectContent { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .onboarding-results { margin-bottom: 12px; height: 280px; max-height: 280px; min-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .onboarding-search { display: flex; width: 100%; margin-bottom: 18px; }
         .search-field { width: 100%; }
@@ -410,6 +438,20 @@
         .schedule-setting-row label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; }
         .schedule-setting-row input { padding: 10px 12px; border: 1px solid var(--divider); border-radius: 12px; background: var(--bg-color); color: var(--text-main); font-size: 13px; font-weight: 600; }
         .schedule-settings input[type="number"] { width: 100%; }
+
+        .onboarding-choice { display: flex; align-items: center; justify-content: center; padding: 18px !important; text-align: center; }
+        .class-choice { align-items: center; justify-content: center; text-align: center; }
+        [data-theme="dark"] .onboarding-choice::before { background: rgba(59,130,246,0.18); }
+        [data-theme="dark"] .onboarding-choice:hover { background: rgba(59,130,246,0.14); }
+        @media (max-width: 600px) {
+            .onboarding-card { padding: 28px 20px; }
+            .onboarding-card h2 { font-size: 27px; font-weight: 700; }
+            .onboarding-choice-grid { gap: 10px; }
+            .onboarding-choice { min-height: 108px; }
+            .onboarding-choice-number { font-size: 38px; }
+            .class-choice { min-height: 78px; }
+            .class-choice .onboarding-choice-number { font-size: 29px; }
+        }
         
         
     </style>
@@ -425,6 +467,7 @@
 <!-- Onboarding Modal -->
 <div class="onboarding-overlay" id="onboarding-overlay">
     <div class="onboarding-card">
+        <div class="onboarding-brand"><img src="app-icon.png" alt="먼지 아이콘"><div><div class="onboarding-brand-name">먼지</div><div class="onboarding-brand-step">나만의 학교 일정 시작하기</div></div></div>
         <h2 id="onboarding-title">학교를 선택하세요</h2>
         <p id="onboarding-desc">시간표를 확인하려면 학교를 먼저 선택해주세요.</p>
         <div id="onboarding-content">
@@ -593,6 +636,7 @@
 <!-- 반 선택 팝업 모달 -->
 <div class="onboarding-overlay" id="classSelectModal" style="display: none; z-index: 10000;">
     <div class="onboarding-card">
+        <div class="onboarding-brand"><img src="app-icon.png" alt="먼지 아이콘"><div><div class="onboarding-brand-name">먼지</div><div class="onboarding-brand-step">마지막으로 반을 선택하세요</div></div></div>
         <h2>반을 선택하세요</h2>
         <div id="classSelectContent" class="onboarding-grid" style="max-height: 300px; overflow-y: auto;"><div class="loading">로딩 중...</div></div>
     </div>
@@ -769,9 +813,7 @@
     function buildAllergyOptions() {
         const box = document.getElementById('allergy-options');
         if (!box) return;
-        box.innerHTML = Object.entries(ALLERGY_NAMES).map(([number, name]) => `
-            <label class="allergy-option"><input type="checkbox" value="${number}" ${selectedAllergies.has(Number(number)) ? 'checked' : ''} onchange="toggleAllergy(${number}, this.checked)"><span>${number}. ${name}</span></label>
-        `).join('');
+        box.innerHTML = `<label class="allergy-option"><select multiple size="7" aria-label="알레르기 선택" onchange="updateAllergySelection(this)">${Object.entries(ALLERGY_NAMES).map(([number, name]) => `<option value="${number}" ${selectedAllergies.has(Number(number)) ? 'selected' : ''}>${number}. ${name}</option>`).join('')}</select></label>`;
         const toggle = document.getElementById('allergy-toggle');
         if (toggle) toggle.checked = allergyEnabled;
     }
@@ -782,9 +824,8 @@
         renderMealGroups();
     }
 
-    function toggleAllergy(number, enabled) {
-        if (enabled) selectedAllergies.add(number);
-        else selectedAllergies.delete(number);
+    function updateAllergySelection(select) {
+        selectedAllergies = new Set([...select.selectedOptions].map(option => Number(option.value)));
         localStorage.setItem('ALLERGIES', JSON.stringify([...selectedAllergies]));
         renderMealGroups();
     }
@@ -798,19 +839,16 @@
         const mealBox = document.getElementById('render-meal');
         const mealTypes = Object.keys(globalMealGroups);
         if (!mealBox || mealTypes.length === 0) return;
-        const warningNumbers = new Set();
         const groupsHtml = mealTypes.map(type => {
             const linesHtml = globalMealGroups[type].map(item => {
                 const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
-                item.allergies.filter(number => selectedAllergies.has(number)).forEach(number => warningNumbers.add(number));
-                const markers = allergyEnabled && item.allergies.length ? ` <small>[${item.allergies.join(', ')}]</small>` : '';
+                const selectedNumbers = item.allergies.filter(number => selectedAllergies.has(number));
+                const markers = allergyEnabled && selectedNumbers.length ? ` <small>[${selectedNumbers.join(', ')}]</small>` : '';
                 return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${item.name}${markers}</div>`;
             }).join('');
             return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
         }).join('');
-        const tags = [...warningNumbers].map(number => `<span class="meal-allergy-tag">${number}. ${ALLERGY_NAMES[number]}</span>`).join('');
-        const note = allergyEnabled ? `<div class="meal-allergy-note">괄호 안 숫자는 알레르기 유발 식품 번호입니다.${tags ? `<br>오늘 주의할 알레르기: <span class="meal-allergy-tags">${tags}</span>` : ''}</div>` : '';
-        mealBox.innerHTML = note + groupsHtml;
+        mealBox.innerHTML = groupsHtml;
     }
     
     function getNextSchoolDay(fromDate) {
@@ -895,11 +933,11 @@
         document.getElementById('onboarding-desc').innerText = '먼저 학년을 선택한 뒤, 반을 선택해주세요.';
         const grades = getGradeOptionsBySchoolType();
 
-        let html = `<div class="onboarding-step-group"><div class="onboarding-grid">`;
+        let html = `<div class="onboarding-choice-grid">`;
         grades.forEach(g => {
-            html += `<button class="onboarding-result-item" onclick="onboardingPickGrade('${g}')">${g}학년</button>`;
+            html += `<button class="onboarding-result-item onboarding-choice" onclick="onboardingPickGrade('${g}')"><span class="onboarding-choice-number">${g}</span><span class="onboarding-choice-label">학년</span></button>`;
         });
-        html += `</div></div><div id="onboarding-class-placeholder" class="onboarding-class-placeholder"></div>`;
+        html += `</div><div id="onboarding-class-placeholder" class="onboarding-class-placeholder"></div>`;
         document.getElementById('onboarding-content').innerHTML = html;
     }
 
@@ -931,7 +969,7 @@
 
         let html = '';
         classNumbers.forEach(num => {
-            html += `<button class="onboarding-result-item" onclick="selectClassFromModal('${num}')">${num}반</button>`;
+            html += `<button class="onboarding-result-item onboarding-choice class-choice" onclick="selectClassFromModal('${num}')"><span class="onboarding-choice-number">${num}</span><span class="onboarding-choice-label">반</span></button>`;
         });
         content.innerHTML = html;
     }
