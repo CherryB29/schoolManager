@@ -107,7 +107,7 @@
         .dashboard-grid { display: flex; flex-direction: column; gap: 20px; }
 
         /* 가로형 화면 대응 미디어 쿼리 (태블릿, PC 및 가로형 스마트폰 디바이스) */
-        @media (min-width: 768px) {
+        @media (min-width: 900px) {
             main { max-width: 1400px; padding: calc(80px + env(safe-area-inset-top)) 28px 32px; }
             .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; align-items: start; }
             .left-column { grid-column: 1; }
@@ -171,6 +171,34 @@
         .meal-item { font-size: 14px; font-weight: 500; padding: 8px 0; line-height: 1.5; }
         .meal-group { margin-bottom: 16px; border-radius: 20px; background: rgba(247, 249, 251, 0.95); padding: 16px 18px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
         .meal-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .meal-allergy-note { margin: -4px 0 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+        .meal-item.allergy-warning { color: #D63031; font-weight: 800; }
+        .meal-allergy-tag { display: inline-block; margin: 0 6px 6px 0; padding: 5px 8px; border-radius: 7px; background: rgba(214,48,49,0.12); color: #D63031; font-size: 11px; font-weight: 800; }
+        .sidebar-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 12px 16px 4px; background: var(--card-bg); }
+        .sidebar-tab { border: 0; border-radius: 9px; padding: 9px 4px; background: var(--bg-color); color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; }
+        .sidebar-tab.active { background: var(--accent-blue); color: white; }
+        .sidebar-panel { display: none; flex-direction: column; gap: 12px; }
+        .sidebar-panel.active { display: flex; }
+        .allergy-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .allergy-option { display: flex; align-items: center; gap: 7px; padding: 10px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); font-size: 12px; font-weight: 600; }
+        .allergy-option input { accent-color: var(--accent-blue); }
+
+        @media (max-width: 899px) {
+            main { max-width: 640px; padding-left: 18px; padding-right: 18px; }
+            .dashboard-grid { gap: 16px; }
+            .card { padding: 20px; border-radius: 20px; }
+            .now-header { align-items: center; margin-bottom: 18px; }
+            .now-clock { font-size: 27px; }
+            .date-display { font-size: 32px; }
+        }
+
+        @media (max-width: 420px) {
+            main { padding-left: 12px; padding-right: 12px; }
+            .date-display { font-size: 28px; letter-spacing: -0.5px; }
+            .date-hint { display: block; margin: 6px 0 0; }
+            .card { padding: 18px; }
+            .now-clock { font-size: 24px; }
+        }
 
         /* Sidebar Settings Layout */
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: 0.25s; z-index: 1000; }
@@ -447,9 +475,23 @@
         <h2>설정</h2>
         <button class="icon-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
     </div>
+    <div class="sidebar-tabs" role="tablist" aria-label="설정 분류">
+        <button class="sidebar-tab active" type="button" onclick="showSidebarTab('meal', this)">급식</button>
+        <button class="sidebar-tab" type="button" onclick="showSidebarTab('timetable', this)">시간표</button>
+        <button class="sidebar-tab" type="button" onclick="showSidebarTab('general', this)">일반</button>
+    </div>
     <div class="sidebar-content">
-        <div class="menu-row menu-clickable" onclick="openSearchSheet()">
-            <span>학교 변경</span>
+        <div class="sidebar-panel active" data-sidebar-panel="meal">
+        <div class="menu-row">
+            <span>알레르기 표시</span>
+            <label class="switch"><input type="checkbox" id="allergy-toggle" onchange="toggleAllergyDisplay(this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="sidebar-section-title">내 알레르기</div>
+        <div class="allergy-options" id="allergy-options"></div>
+        </div>
+        <div class="sidebar-panel" data-sidebar-panel="timetable">
+        <div class="menu-row menu-clickable" onclick="openEditorSheet()">
+            <span>시간표 편집</span>
             <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
         <div class="menu-row">
@@ -461,16 +503,15 @@
         </div>
         <div class="menu-row">
             <span>반</span>
-            <select id="class-select" onchange="saveGradeClass()">
-                <!-- Dynamic options populated by updateClassOptions() -->
-            </select>
+            <select id="class-select" onchange="saveGradeClass()"></select>
         </div>
-        <div class="menu-row menu-clickable" onclick="openEditorSheet()">
-            <span>시간표 편집</span>
+        </div>
+        <div class="sidebar-panel" data-sidebar-panel="general">
+        <div class="menu-row menu-clickable" onclick="openSearchSheet()">
+            <span>학교 변경</span>
             <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
         <div class="sidebar-divider"></div>
-        <div class="sidebar-section-title">설정</div>
         <div class="menu-row">
             <span>다크 모드</span>
             <label class="switch">
@@ -488,6 +529,7 @@
         <div class="menu-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
             <button class="menu-button" onclick="downloadBackup()">데이터 백업</button>
             <button class="menu-button" onclick="triggerImportBackup()">데이터 불러오기</button>
+        </div>
         </div>
         <input type="file" id="backup-file-input" accept="application/json" style="display:none" onchange="handleBackupImport(event)">
     </div>
@@ -625,6 +667,13 @@
     let onboardingSelectedGrade = null;
     let timetableEdited = localStorage.getItem('TIMETABLE_EDITED') === 'true';
     let showSeconds = localStorage.getItem('SHOW_SECONDS') === 'true';
+    const ALLERGY_NAMES = {
+        1: '난류(계란)', 2: '우유', 3: '메밀', 4: '땅콩', 5: '대두(콩)', 6: '밀',
+        7: '고등어', 8: '게', 9: '새우', 10: '돼지고기', 11: '복숭아', 12: '토마토',
+        13: '아황산류', 14: '호두', 15: '닭고기', 16: '쇠고기', 17: '오징어', 18: '조개류'
+    };
+    let allergyEnabled = localStorage.getItem('ALLERGY_ENABLED') === 'true';
+    let selectedAllergies = new Set(JSON.parse(localStorage.getItem('ALLERGIES') || '[]').map(Number));
 
     function getDefaultScheduleSettings() {
         return {
@@ -704,9 +753,65 @@
     let weekDataBuffer = {};
     let globalTodayRows = [];
     let globalMealLines = [];
+    let globalMealGroups = {};
     let globalTomorrowRows = [];
     let globalTomorrowMealLines = [];
     let onboardingSearchTimeout = null;
+
+    function showSidebarTab(name, button) {
+        document.querySelectorAll('.sidebar-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.dataset.sidebarPanel === name);
+        });
+        document.querySelectorAll('.sidebar-tab').forEach(tab => tab.classList.remove('active'));
+        if (button) button.classList.add('active');
+    }
+
+    function buildAllergyOptions() {
+        const box = document.getElementById('allergy-options');
+        if (!box) return;
+        box.innerHTML = Object.entries(ALLERGY_NAMES).map(([number, name]) => `
+            <label class="allergy-option"><input type="checkbox" value="${number}" ${selectedAllergies.has(Number(number)) ? 'checked' : ''} onchange="toggleAllergy(${number}, this.checked)"><span>${number}. ${name}</span></label>
+        `).join('');
+        const toggle = document.getElementById('allergy-toggle');
+        if (toggle) toggle.checked = allergyEnabled;
+    }
+
+    function toggleAllergyDisplay(enabled) {
+        allergyEnabled = enabled;
+        localStorage.setItem('ALLERGY_ENABLED', String(enabled));
+        renderMealGroups();
+    }
+
+    function toggleAllergy(number, enabled) {
+        if (enabled) selectedAllergies.add(number);
+        else selectedAllergies.delete(number);
+        localStorage.setItem('ALLERGIES', JSON.stringify([...selectedAllergies]));
+        renderMealGroups();
+    }
+
+    function getMealAllergies(dish) {
+        const matches = String(dish || '').match(/\(([^)]*)\)/g) || [];
+        return [...new Set(matches.flatMap(match => (match.match(/\d+/g) || []).map(Number)))].filter(number => ALLERGY_NAMES[number]);
+    }
+
+    function renderMealGroups() {
+        const mealBox = document.getElementById('render-meal');
+        const mealTypes = Object.keys(globalMealGroups);
+        if (!mealBox || mealTypes.length === 0) return;
+        const warningNumbers = new Set();
+        const groupsHtml = mealTypes.map(type => {
+            const linesHtml = globalMealGroups[type].map(item => {
+                const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
+                item.allergies.filter(number => selectedAllergies.has(number)).forEach(number => warningNumbers.add(number));
+                const markers = allergyEnabled && item.allergies.length ? ` <small>[${item.allergies.join(', ')}]</small>` : '';
+                return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${item.name}${markers}</div>`;
+            }).join('');
+            return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
+        }).join('');
+        const tags = [...warningNumbers].map(number => `<span class="meal-allergy-tag">${number}. ${ALLERGY_NAMES[number]}</span>`).join('');
+        const note = allergyEnabled ? `<div class="meal-allergy-note">괄호 안 숫자는 알레르기 유발 식품 번호입니다.${tags ? `<br>오늘 주의할 알레르기: <span class="meal-allergy-tags">${tags}</span>` : ''}</div>` : '';
+        mealBox.innerHTML = note + groupsHtml;
+    }
     
     function getNextSchoolDay(fromDate) {
         const d = new Date(fromDate);
@@ -1151,6 +1256,7 @@
             document.getElementById('dark-mode-toggle').checked = true;
         }
         document.getElementById('seconds-toggle').checked = showSeconds;
+        buildAllergyOptions();
 
         const onboardingDone = localStorage.getItem('ONBOARDING_DONE') === 'true';
         const hasSchoolAndClass = Boolean(SCHUL_CODE && CLASS_NM);
@@ -1974,31 +2080,33 @@
                 const groupedMeals = rows.reduce((acc, item) => {
                     const type = String(item.MMEAL_SC_NM || '중식').trim();
                     const dish = String(item.DDISH_NM || '');
-                    const clean = dish.replace(/<br\s*\/?>>/gi, '\n').replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '');
-                    const lines = clean.split('\n').map(l => l.trim()).filter(l => l);
+                    const lines = dish.replace(/<br\s*\/?>/gi, '\n').split('\n').map(line => line.trim()).filter(line => line).map(line => ({
+                        name: line.replace(/\([^)]*\)/g, '').replace(/[0-9.]/g, '').trim(),
+                        allergies: getMealAllergies(line)
+                    }));
                     if (!acc[type]) acc[type] = [];
                     acc[type].push(...lines);
                     return acc;
                 }, {});
+                globalMealGroups = groupedMeals;
                 const mealTypes = Object.keys(groupedMeals);
                 if (mealTypes.length === 0) {
                     mealBox.innerHTML = '<div class="empty">급식 없음</div>';
                     globalMealLines = [];
                 } else {
-                    globalMealLines = mealTypes.flatMap(type => groupedMeals[type].map(line => `${type}: ${line}`));
-                    mealBox.innerHTML = mealTypes.map(type => {
-                        const linesHtml = groupedMeals[type].map(line => `<div class="meal-item">${line}</div>`).join('');
-                        return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
-                    }).join('');
+                    globalMealLines = mealTypes.flatMap(type => groupedMeals[type].map(item => `${type}: ${item.name}`));
+                    renderMealGroups();
                 }
             } else { 
                 mealBox.innerHTML = '<div class="empty">급식 없음</div>'; 
                 globalMealLines = []; 
+                globalMealGroups = {};
             }
         } catch(e) { 
             console.error('급식 오류:', e);
             mealBox.innerHTML = '<div class="empty">식단 수집 실패</div>'; 
             globalMealLines = []; 
+            globalMealGroups = {};
         }
 
         // 내일 시간표 & 급식 미리 로드
