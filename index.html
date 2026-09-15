@@ -118,7 +118,7 @@
         .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
-        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; }
+        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; }
         .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -126,6 +126,11 @@
         /* Cards Base Style */
         .card { background-color: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.02); }
         .card h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-secondary); letter-spacing: -0.3px; }
+        .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .card-heading h2 { margin-bottom: 18px; }
+        .share-meal-btn { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .share-meal-btn:hover { color: var(--text-main); border-color: var(--text-secondary); }
+        .share-meal-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         /* Premium NOW Card UI Structure */
         .now-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
@@ -176,16 +181,23 @@
         .meal-item.allergy-warning .meal-allergy-number { color: inherit; }
         .meal-item .meal-allergy-number.selected { color: #D63031; font-weight: 900; }
         .meal-allergy-summary { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--divider); color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+        .now-progress { margin-top: 16px; }
+        .now-progress-track { height: 10px; overflow: hidden; border-radius: 999px; background: var(--divider); }
+        .now-progress-fill { height: 100%; border-radius: inherit; background: var(--accent-blue); transition: width 0.4s ease; }
+        .now-progress-label { display: flex; justify-content: space-between; margin-top: 7px; color: var(--text-secondary); font-size: 11px; font-weight: 700; }
         .meal-allergy-tag { display: inline-block; margin: 0 6px 6px 0; padding: 5px 8px; border-radius: 7px; background: rgba(214,48,49,0.12); color: #D63031; font-size: 11px; font-weight: 800; }
         .sidebar-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 10px 14px 8px; background: var(--card-bg); border-bottom: 1px solid var(--divider); }
         .sidebar-tab { border: 0; border-radius: 8px; padding: 10px 4px; background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; }
-        .sidebar-tab.active { background: var(--text-main); color: var(--card-bg); }
+        .sidebar-tab.active { background: var(--bg-color); color: var(--text-main); box-shadow: inset 0 -2px 0 var(--text-secondary); }
         .sidebar-panel { display: none; flex-direction: column; gap: 12px; }
         .sidebar-panel.active { display: flex; }
         .allergy-options { display: block; }
-        .allergy-option { display: block; width: 100%; padding: 11px 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); color: var(--text-main); font-size: 13px; font-weight: 600; }
-        .allergy-option select { width: 100%; height: 38px; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+        .allergy-option { position: relative; display: block; width: 100%; padding: 11px 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--card-bg); color: var(--text-main); font-size: 13px; font-weight: 600; }
+        .allergy-option select { width: 100%; height: 38px; border: 0; outline: 0; background: transparent; color: transparent; font: inherit; cursor: pointer; }
+        .allergy-option option { color: var(--text-main); background: var(--card-bg); }
+        .allergy-summary { position: absolute; top: 0; left: 12px; right: 12px; height: 38px; display: flex; align-items: center; pointer-events: none; color: var(--text-main); font-size: 13px; font-weight: 700; }
         .allergy-option select[multiple] { overflow: hidden; }
+        .allergy-option option { color: var(--text-main); background: var(--card-bg); }
         .allergy-option option:checked { color: var(--text-main); background: rgba(49,130,246,0.14); }
 
         @media (max-width: 899px) {
@@ -226,7 +238,7 @@
         .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 800; }
         .sidebar-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
 
-        .menu-row { background: var(--card-bg); padding: 16px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; font-weight: 500; font-size: 15px; }
+        .menu-row { background: var(--card-bg); padding: 15px; border: 1px solid var(--divider); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; }
         .menu-button { width: 100%; border: none; background: rgba(49,130,246,0.12); color: var(--accent-blue); border-radius: 12px; padding: 12px 14px; font-weight: 600; cursor: pointer; }
         .menu-button:hover { background: rgba(49,130,246,0.18); }
         .sidebar-section-title { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--text-secondary); padding: 8px 0 0 4px; }
@@ -342,10 +354,10 @@
         .onboarding-card h2, .onboarding-card p { display: none; }
         .onboarding-choice-grid { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         .onboarding-choice { position: relative; min-height: 124px; align-items: center; justify-content: center; padding: 18px; border-radius: 16px; background: var(--bg-color); border: 1px solid var(--divider); color: var(--text-main); overflow: hidden; transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
-        .onboarding-choice::before { content: ''; position: absolute; top: -18px; right: -12px; width: 58px; height: 58px; border-radius: 50%; background: rgba(49,130,246,0.12); }
+        .onboarding-choice::before { display: none; }
         .onboarding-choice:hover { transform: translateY(-2px); border-color: var(--text-main); background: var(--card-bg); }
-        .onboarding-choice-number { position: relative; display: block; font-size: 44px; line-height: 1; font-weight: 850; color: var(--text-main); }
-        .onboarding-choice-label { position: relative; display: block; margin-top: 7px; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+        .onboarding-choice-number { position: relative; display: block; font-size: 44px; line-height: 1; font-weight: 650; color: var(--text-main); }
+        .onboarding-choice-label { position: relative; display: block; margin-top: 7px; font-size: 12px; font-weight: 500; color: var(--text-secondary); }
         .class-choice-grid { grid-template-columns: repeat(4, 1fr); max-height: 330px; overflow-y: auto; padding: 2px; }
         .class-choice { min-height: 86px; align-items: center; justify-content: center; padding: 12px; }
         .class-choice .onboarding-choice-number { font-size: 32px; }
@@ -695,7 +707,13 @@
 
         <div class="right-column">
             <div class="card">
-                <h2>급식</h2>
+                <div class="card-heading">
+                    <h2>급식</h2>
+                    <button class="share-meal-btn" type="button" onclick="shareMealCard()" title="급식 이미지 공유">
+                        <svg viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+                        공유
+                    </button>
+                </div>
                 <div id="render-meal"><div class="loading">...</div></div>
             </div>
         </div>
@@ -821,7 +839,7 @@
     function buildAllergyOptions() {
         const box = document.getElementById('allergy-options');
         if (!box) return;
-        box.innerHTML = `<label class="allergy-option"><select multiple size="1" aria-label="알레르기 선택" onchange="updateAllergySelection(this)"><option value="" disabled ${selectedAllergies.size === 0 ? 'selected' : ''}>알레르기 식품을 선택하세요</option>${Object.entries(ALLERGY_NAMES).map(([number, name]) => `<option value="${number}" ${selectedAllergies.has(Number(number)) ? 'selected' : ''}>${number}. ${name}</option>`).join('')}</select></label>`;
+        box.innerHTML = `<label class="allergy-option"><span class="allergy-summary">${selectedAllergies.size ? `${selectedAllergies.size}개 선택됨` : '알레르기 식품을 선택하세요'}</span><select multiple size="1" aria-label="알레르기 선택" onchange="updateAllergySelection(this)">${Object.entries(ALLERGY_NAMES).map(([number, name]) => `<option value="${number}" ${selectedAllergies.has(Number(number)) ? 'selected' : ''}>${number}. ${name}</option>`).join('')}</select></label>`;
         const toggle = document.getElementById('allergy-toggle');
         if (toggle) toggle.checked = allergyEnabled;
     }
@@ -835,6 +853,8 @@
     function updateAllergySelection(select) {
         selectedAllergies = new Set([...select.selectedOptions].map(option => Number(option.value)).filter(number => Number.isInteger(number) && number > 0));
         localStorage.setItem('ALLERGIES', JSON.stringify([...selectedAllergies]));
+        const summary = select.parentElement.querySelector('.allergy-summary');
+        if (summary) summary.textContent = selectedAllergies.size ? `${selectedAllergies.size}개 선택됨` : '알레르기 식품을 선택하세요';
         renderMealGroups();
     }
 
@@ -851,7 +871,7 @@
         const groupsHtml = mealTypes.map(type => {
             const linesHtml = globalMealGroups[type].map(item => {
                 const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
-                const markers = allergyEnabled && item.allergies.length ? ` <small>${item.allergies.map(number => `<span class="meal-allergy-number${selectedAllergies.has(number) ? ' selected' : ''}">[${number}]</span>`).join(' ')}</small>` : '';
+                const markers = allergyEnabled && item.allergies.length ? ` <small class="meal-allergy-numbers">(${item.allergies.map(number => `<span class="meal-allergy-number${selectedAllergies.has(number) ? ' selected' : ''}">${number}</span>`).join(', ')})</small>` : '';
                 if (warning) {
                     const foods = item.allergies.filter(number => selectedAllergies.has(number)).map(number => ALLERGY_NAMES[number]);
                     warningMeals.push({ name: item.name, foods });
@@ -860,8 +880,124 @@
             }).join('');
             return `<div class="meal-group"><div class="meal-label">${type}</div>${linesHtml}</div>`;
         }).join('');
-        const warningText = warningMeals.map(item => `<div>[${item.name}]에는 [${item.foods.join(', ')}]이 포함되어있습니다.</div>`).join('');
+        const warningText = warningMeals.map(item => `<div>${item.name}에는 알레르기 유발 식품인 ${item.foods.join(', ')}가 포함되어있습니다.</div>`).join('');
         mealBox.innerHTML = groupsHtml + (warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '');
+    }
+
+    function roundRectPath(context, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+    }
+
+    function wrapCanvasText(context, text, maxWidth) {
+        const lines = [];
+        let line = '';
+        for (const character of text) {
+            const testLine = line + character;
+            if (context.measureText(testLine).width > maxWidth && line) {
+                lines.push(line);
+                line = character;
+            } else {
+                line = testLine;
+            }
+        }
+        if (line) lines.push(line);
+        return lines;
+    }
+
+    async function shareMealCard() {
+        const mealTypes = Object.keys(globalMealGroups);
+        const dateValue = document.getElementById('main-date-input').value;
+        if (!mealTypes.length || !dateValue) {
+            alert('공유할 급식 정보가 없습니다.');
+            return;
+        }
+
+        const date = new Date(`${dateValue}T00:00:00`);
+        const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        const menuLines = mealTypes.flatMap(type => globalMealGroups[type].map(item => ({ type, name: item.name })));
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const canvasWidth = 1080;
+        const contentWidth = 840;
+        const lineHeight = 58;
+        const canvasHeight = Math.max(980, 390 + menuLines.length * lineHeight);
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        context.fillStyle = '#F4F6F8';
+        context.fillRect(0, 0, canvasWidth, canvasHeight);
+        roundRectPath(context, 70, 70, canvasWidth - 140, canvasHeight - 140, 34);
+        context.fillStyle = '#FFFFFF';
+        context.fill();
+
+        const logo = new Image();
+        logo.src = 'app-icon.png';
+        await new Promise(resolve => {
+            logo.onload = resolve;
+            logo.onerror = resolve;
+        });
+        if (logo.complete && logo.naturalWidth) {
+            context.drawImage(logo, 120, 120, 96, 96);
+        }
+
+        context.fillStyle = '#191F28';
+        context.font = '700 30px Pretendard, sans-serif';
+        context.fillText('먼지', 246, 165);
+        context.fillStyle = '#8B95A1';
+        context.font = '500 22px Pretendard, sans-serif';
+        context.fillText('오늘의 급식', 246, 201);
+
+        context.fillStyle = '#191F28';
+        context.font = '800 54px Pretendard, sans-serif';
+        context.fillText(`${date.getMonth() + 1}월 ${date.getDate()}일`, 120, 330);
+        context.fillStyle = '#8B95A1';
+        context.font = '600 28px Pretendard, sans-serif';
+        context.fillText(dayNames[date.getDay()], 120, 375);
+
+        let y = 470;
+        let currentType = '';
+        for (const menu of menuLines) {
+            if (menu.type !== currentType) {
+                currentType = menu.type;
+                context.fillStyle = '#8B95A1';
+                context.font = '700 22px Pretendard, sans-serif';
+                context.fillText(currentType, 120, y);
+                y += 48;
+            }
+            context.fillStyle = '#191F28';
+            context.font = '600 30px Pretendard, sans-serif';
+            const lines = wrapCanvasText(context, menu.name, contentWidth);
+            lines.forEach(line => {
+                context.fillText(line, 120, y);
+                y += lineHeight;
+            });
+            y += 8;
+        }
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) return;
+        const file = new File([blob], `먼지-급식-${dateValue}.png`, { type: 'image/png' });
+        if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            try {
+                await navigator.share({ title: `먼지 ${date.getMonth() + 1}월 ${date.getDate()}일 급식`, files: [file] });
+                return;
+            } catch (error) {
+                if (error.name === 'AbortError') return;
+            }
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        link.click();
+        URL.revokeObjectURL(url);
     }
     
     function getNextSchoolDay(fromDate) {
@@ -2047,6 +2183,11 @@
                 }
             } else {
                 html = `<div class="now-main"><div class="now-title">-</div></div>`;
+            }
+
+            if (found && totalMins >= found.start && totalMins < found.end) {
+                const progress = Math.min(100, Math.max(0, ((totalMins - found.start) / (found.end - found.start)) * 100));
+                html += `<div class="now-progress"><div class="now-progress-track"><div class="now-progress-fill" style="width:${progress}%"></div></div><div class="now-progress-label"><span>${found.name}</span><span>${Math.round(progress)}%</span></div></div>`;
             }
             
             return html;
