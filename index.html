@@ -121,7 +121,7 @@
         .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
-        .date-picker-wrapper { display: inline-block; margin-bottom: 20px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+        .date-picker-wrapper { display: inline-block; margin: 0 0 20px 8px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
         .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; white-space: nowrap; }
         .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -418,6 +418,12 @@
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
         .onboarding-search input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--divider); background: var(--bg-color); font-size: 14px; font-weight: 500; }
         .onboarding-search button { padding: 0 14px; background: var(--accent-blue); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .recent-schools { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; text-align: left; }
+        .recent-schools-title { color: var(--text-secondary); font-size: 12px; font-weight: 700; }
+        .recent-school { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 11px 13px; border: 1px solid var(--divider); border-radius: 10px; background: var(--bg-color); color: var(--text-main); cursor: pointer; text-align: left; }
+        .recent-school:hover { border-color: var(--accent-blue); background: rgba(49,130,246,0.08); }
+        .recent-school-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
+        .recent-school-address { flex-shrink: 0; max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 11px; }
         .onboarding-results { margin-bottom: 12px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .onboarding-result-item, .item-node { padding: 14px 16px; background: var(--card-bg); color: var(--text-main); border-radius: 12px; cursor: pointer; border: 1px solid var(--divider); font-size: 13px; font-weight: 600; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; transition: background 0.2s, border-color 0.2s; }
         .onboarding-result-item:hover, .item-node:hover { background: rgba(49, 130, 246, 0.08); border-color: var(--accent-blue); }
@@ -1059,18 +1065,55 @@
                     else if(r.SCHUL_KND_SC_NM.includes('중학')) type = 'misTimetable';
                     const name = escapeJS(r.SCHUL_NM);
                     const address = escapeJS(r.ORG_RDNMA);
-                    html += `<div class="onboarding-result-item" onclick="onboardingPickSchool('${name}','${r.ATPT_OFCDC_SC_CODE}','${r.SD_SCHUL_CODE}','${type}')"><div class="school-name">${r.SCHUL_NM}</div><div class="school-address">${r.ORG_RDNMA}</div></div>`;
+                    const schoolAddress = escapeJS(r.ORG_RDNMA);
+                    html += `<div class="onboarding-result-item" onclick="onboardingPickSchool('${name}','${r.ATPT_OFCDC_SC_CODE}','${r.SD_SCHUL_CODE}','${type}','${schoolAddress}')"><div class="school-name">${r.SCHUL_NM}</div><div class="school-address">${r.ORG_RDNMA}</div></div>`;
                 });
                 box.innerHTML = html;
             } else { box.innerHTML = '<div class="empty">검색 결과 없음</div>'; }
         } catch(e) { box.innerHTML = '<div class="empty">네트워크 에러</div>'; }
     }
 
-    function onboardingPickSchool(name, atpt, schul, type) {
+    function getRecentSchools() {
+        try {
+            const schools = JSON.parse(localStorage.getItem('RECENT_SCHOOLS') || '[]');
+            return Array.isArray(schools) ? schools : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveRecentSchool(school) {
+        const schools = getRecentSchools().filter(item => item.schul !== school.schul);
+        schools.unshift(school);
+        localStorage.setItem('RECENT_SCHOOLS', JSON.stringify(schools.slice(0, 5)));
+    }
+
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+    }
+
+    function renderRecentSchoolRecommendations() {
+        const schools = getRecentSchools();
+        if (!schools.length) return '';
+        const escapeJS = value => String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, ' ');
+        const items = schools.map(school => `<button class="recent-school" type="button" onclick="onboardingPickSchool('${escapeJS(school.name)}','${escapeJS(school.atpt)}','${escapeJS(school.schul)}','${escapeJS(school.type)}','${escapeJS(school.address)}')"><span class="recent-school-name">${escapeHtml(school.name)}</span><span class="recent-school-address">${escapeHtml(school.address)}</span></button>`).join('');
+        return `<div class="recent-schools"><div class="recent-schools-title">최근 선택한 학교</div>${items}</div>`;
+    }
+
+    function renderSchoolSelectionContent() {
+        document.getElementById('onboarding-content').innerHTML = `
+            <div class="onboarding-search"><div class="search-field">
+                <input type="text" id="onboarding-query" placeholder="학교명 입력" autocomplete="off" oninput="debouncedOnboardingSearchSchool()" onkeypress="if(event.key==='Enter') onboardingSearchSchool()">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div></div>${renderRecentSchoolRecommendations()}<div class="onboarding-results" id="onboarding-results"></div>`;
+    }
+
+    function onboardingPickSchool(name, atpt, schul, type, address = '') {
         SCHOOL_NAME = name;
         ATPT_CODE = atpt;
         SCHUL_CODE = schul;
         SCHOOL_TYPE = type;
+        saveRecentSchool({ name, atpt, schul, type, address });
         localStorage.setItem('SCHOOL_NAME', name);
         localStorage.setItem('ATPT_CODE', atpt);
         localStorage.setItem('SCHUL_CODE', schul);
@@ -2428,15 +2471,9 @@
         document.getElementById('sidebarOverlay').classList.remove('active');
         document.getElementById('searchSheetOverlay').classList.remove('active');
         document.getElementById('searchSheet').classList.remove('active');
-        document.getElementById('onboarding-query').value = '';
-        document.getElementById('onboarding-results').innerHTML = '';
         document.getElementById('onboarding-title').innerText = '학교를 선택하세요';
         document.getElementById('onboarding-desc').innerText = '시간표를 확인하려면 학교를 먼저 선택해주세요.';
-        document.getElementById('onboarding-content').innerHTML = `
-            <div class="onboarding-search"><div class="search-field">
-                <input type="text" id="onboarding-query" placeholder="학교명 입력" autocomplete="off" oninput="debouncedOnboardingSearchSchool()" onkeypress="if(event.key==='Enter') onboardingSearchSchool()">
-                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            </div></div><div class="onboarding-results" id="onboarding-results"></div>`;
+        renderSchoolSelectionContent();
         document.getElementById('onboarding-overlay').classList.remove('hidden');
     }
     function closeSearchSheet() {
@@ -2481,18 +2518,20 @@
             });
             if(res.schoolInfo) {
                 let html = '';
+                const escapeJS = value => String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, ' ');
                 res.schoolInfo[1].row.forEach(r => {
                     let type = "hisTimetable";
                     if(r.SCHUL_KND_SC_NM.includes('초등')) type = 'elsTimetable';
                     else if(r.SCHUL_KND_SC_NM.includes('중학')) type = 'misTimetable';
-                    html += `<div class="item-node" onclick="pickSchool('${r.SCHUL_NM}','${r.ATPT_OFCDC_SC_CODE}','${r.SD_SCHUL_CODE}','${type}')"><div style="font-weight:700;font-size:15px;">${r.SCHUL_NM}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${r.ORG_RDNMA}</div></div>`;
+                    html += `<div class="item-node" onclick="pickSchool('${escapeJS(r.SCHUL_NM)}','${escapeJS(r.ATPT_OFCDC_SC_CODE)}','${escapeJS(r.SD_SCHUL_CODE)}','${type}','${escapeJS(r.ORG_RDNMA)}')"><div style="font-weight:700;font-size:15px;">${r.SCHUL_NM}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${r.ORG_RDNMA}</div></div>`;
                 });
                 box.innerHTML = html;
             } else { box.innerHTML = '<div class="empty">검색 결과 없음</div>'; }
         } catch(e) { box.innerHTML = '<div class="empty">네트워크 에러</div>'; }
     }
-    function pickSchool(name, atpt, schul, type) {
+    function pickSchool(name, atpt, schul, type, address = '') {
         SCHOOL_NAME = name; ATPT_CODE = atpt; SCHUL_CODE = schul; SCHOOL_TYPE = type;
+        saveRecentSchool({ name, atpt, schul, type, address });
         localStorage.setItem('SCHOOL_NAME', name);
         localStorage.setItem('ATPT_CODE', atpt);
         localStorage.setItem('SCHUL_CODE', schul);
