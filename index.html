@@ -118,12 +118,12 @@
             .right-column { grid-column: 3; }
         }
 
-        .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 10px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
+        .school-badge { display: inline-block; padding: 6px 12px; background: var(--bg-color); color: var(--text-secondary); border-radius: 8px; font-size: 11px; font-weight: 700; margin: 0 0 10px -4px; border: 1px solid var(--divider); letter-spacing: 0.3px; }
         
         /* Date Title Area Line Configuration */
         .date-picker-wrapper { display: inline-block; margin: 0 0 20px 8px; cursor: pointer; position: relative; text-align: left; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-        .date-display { font-size: 36px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; white-space: nowrap; }
-        .date-hint { font-size: 12px; color: var(--text-secondary); margin-top: 10px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; margin-left: 8px; }
+        .date-display { font-size: 38px; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px; white-space: nowrap; }
+        .date-hint { font-size: 12px; color: var(--text-secondary); margin: 10px 0 0 4px; letter-spacing: 0.2px; line-height: 1.6; display: inline-block; }
         .date-picker-wrapper input[type="date"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
         /* Cards Base Style */
@@ -132,9 +132,9 @@
         .card h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px 0; color: var(--text-secondary); letter-spacing: -0.3px; }
         .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .card-heading h2 { margin-bottom: 18px; }
-        .share-meal-btn { position: relative; top: 0; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--divider); border-radius: 8px; padding: 6px 9px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .share-meal-btn { position: relative; top: 0; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--divider); border-radius: 7px; padding: 5px 8px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 10px; font-weight: 600; cursor: pointer; }
         .share-meal-btn:hover { color: var(--text-main); border-color: var(--text-secondary); }
-        .share-meal-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .share-meal-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         /* Premium NOW Card UI Structure */
         .now-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
@@ -211,13 +211,13 @@
             .card { padding: 20px; border-radius: 20px; }
             .now-header { align-items: center; margin-bottom: 18px; }
             .now-clock { font-size: 27px; }
-            .date-display { font-size: 32px; }
+            .date-display { font-size: 34px; }
         }
 
         @media (max-width: 420px) {
             main { padding-left: 12px; padding-right: 12px; }
-            .date-display { font-size: 28px; letter-spacing: -0.5px; }
-            .date-hint { display: block; margin: 6px 0 0; }
+            .date-display { font-size: 30px; letter-spacing: -0.5px; }
+            .date-hint { display: block; margin: 6px 0 0 -4px; }
             .card { padding: 18px; }
             .now-clock { font-size: 24px; }
         }
@@ -418,12 +418,12 @@
         .onboarding-search { display: flex; gap: 6px; margin-bottom: 12px; }
         .onboarding-search input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--divider); background: var(--bg-color); font-size: 14px; font-weight: 500; }
         .onboarding-search button { padding: 0 14px; background: var(--accent-blue); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .recent-schools { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; text-align: left; }
-        .recent-schools-title { color: var(--text-secondary); font-size: 12px; font-weight: 700; }
-        .recent-school { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 11px 13px; border: 1px solid var(--divider); border-radius: 10px; background: var(--bg-color); color: var(--text-main); cursor: pointer; text-align: left; }
+        .recent-schools { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; text-align: left; }
+        .recent-schools-title { margin-bottom: 2px; color: var(--text-secondary); font-size: 12px; font-weight: 700; }
+        .recent-school { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; padding: 14px 16px; border: 1px solid var(--divider); border-radius: 12px; background: var(--card-bg); color: var(--text-main); cursor: pointer; text-align: left; font: inherit; }
         .recent-school:hover { border-color: var(--accent-blue); background: rgba(49,130,246,0.08); }
-        .recent-school-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
-        .recent-school-address { flex-shrink: 0; max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 11px; }
+        .recent-school-name { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 800; color: var(--text-main); }
+        .recent-school-address { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 13px; font-weight: 500; line-height: 1.4; }
         .onboarding-results { margin-bottom: 12px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .onboarding-result-item, .item-node { padding: 14px 16px; background: var(--card-bg); color: var(--text-main); border-radius: 12px; cursor: pointer; border: 1px solid var(--divider); font-size: 13px; font-weight: 600; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; transition: background 0.2s, border-color 0.2s; }
         .onboarding-result-item:hover, .item-node:hover { background: rgba(49, 130, 246, 0.08); border-color: var(--accent-blue); }
@@ -451,6 +451,7 @@
         .onboarding-card { background: var(--card-bg); border-radius: 24px; padding: 38px; max-width: 520px; width: 100%; min-height: 0; max-height: min(90vh, 800px); box-shadow: 0 16px 50px rgba(15,23,42,0.14); }
         .onboarding-overlay { padding: 16px 18px; }
         #classSelectContent { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        #classSelectContent > .loading { grid-column: 1 / -1; width: 100%; text-align: center; }
         .onboarding-results { margin-bottom: 12px; height: 280px; max-height: 280px; min-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .onboarding-search { display: flex; width: 100%; margin-bottom: 18px; }
         .search-field { width: 100%; }
