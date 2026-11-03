@@ -1,0 +1,10 @@
+{
+  "name": "meonji",
+  "version": "1.0.0",
+  "private": true,
+  "description": "먼지 - 학교 시간표/급식/이동수업 앱",
+  "dependencies": {
+    "@upstash/redis": "^1.34.0",
+    "web-push": "^3.6.7"
+  }
+}
