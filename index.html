@@ -510,12 +510,51 @@
         .calendar-event-date { flex: 0 0 34px; color: var(--text-secondary); font-weight: 700; }
         .calendar-event.off .calendar-event-date { color: inherit; opacity: 0.8; }
 
-        .now-meal-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .now-meal-list li { padding: 9px 11px; border-radius: 10px; background: var(--bg-color); border: 1px solid var(--divider); font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--text-main); overflow-wrap: anywhere; word-break: keep-all; }
-        .now-section .now-meal-list { margin-bottom: 0; }
-        .now-section .now-meal-list li { background: var(--card-bg); }
-        .now-main .now-meal-list li { background: var(--card-bg); }
-        @media (max-width: 340px) { .now-meal-list { grid-template-columns: 1fr; } }
+        /* NOW 카드 안의 급식: 아래 급식 카드와 같은 상자 모양 */
+        .meal-group.now-meal { margin: 0 0 12px; padding: 12px 18px 8px; }
+        .now-section .meal-group.now-meal { margin-bottom: 0; }
+        .now-meal .meal-item { padding: 7px 0; }
+        .now-main .meal-allergy-summary, .now-section .meal-allergy-summary { margin-top: 10px; padding-top: 10px; }
+
+        /* ================= UI 디테일 ================= */
+        /* 로딩 스켈레톤 */
+        .skeleton { height: 16px; margin: 14px 0; border-radius: 8px; background: linear-gradient(90deg, var(--divider) 25%, var(--bg-color) 50%, var(--divider) 75%); background-size: 200% 100%; animation: shimmer 1.3s ease-in-out infinite; }
+        .skeleton.short { width: 60%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* 카드가 부드럽게 나타나도록 */
+        .card { animation: cardIn 0.35s ease both; }
+        .middle-column .card { animation-delay: 0.05s; }
+        .right-column .card { animation-delay: 0.1s; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        /* 키보드 포커스, 눌림 반응 */
+        button:focus-visible, select:focus-visible, input:focus-visible, .menu-clickable:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+        button { transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+        button:active:not(:disabled) { transform: scale(0.97); }
+        .menu-clickable:active { opacity: 0.7; }
+
+        /* 시간표: 시작 시각, 지난 수업, 진행 중 수업 */
+        .period { width: 58px; line-height: 1.2; flex-shrink: 0; }
+        .period-time { display: block; margin-top: 3px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.75; }
+        .timetable-list li { transition: opacity 0.3s ease, background 0.3s ease; }
+        .timetable-list li.is-past { opacity: 0.45; }
+        .timetable-list li.is-now { margin: 2px -12px; padding: 14px 12px; border-radius: 14px; border-bottom-color: transparent; background: rgba(49,130,246,0.09); }
+        .timetable-list li.is-now + li { border-top: none; }
+        .timetable-list li.is-now .period { color: var(--accent-blue); }
+        .timetable-list li.is-now .subject-container::after { content: '진행 중'; flex-shrink: 0; margin-left: auto; padding: 3px 8px; border-radius: 999px; background: var(--accent-blue); color: #fff; font-size: 11px; font-weight: 700; }
+
+        /* 날짜 영역 */
+        .date-actions { margin: -8px 0 14px 8px; }
+        .today-btn { border: 1px solid var(--divider); border-radius: 999px; padding: 7px 14px; background: var(--card-bg); color: var(--accent-blue); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+
+        main { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+        .now-time-info { flex-wrap: wrap; }
+        .now-title, .now-subtitle, .subject { overflow-wrap: anywhere; word-break: keep-all; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
 
         .offline-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: rgba(245,158,11,0.14); color: #B45309; font-size: 12px; font-weight: 700; }
         [data-theme="dark"] .offline-note { color: #FBBF24; }
@@ -752,9 +791,10 @@
     <div class="date-picker-wrapper" onclick="openCalendar()" title="날짜를 눌러 변경하세요">
         <div class="school-badge" id="meta-school-name">-</div>
         <div class="date-display" id="meta-date-label">로딩 중...</div>
-        <div class="date-hint">날짜를 눌러 변경</div>
+        <div class="date-hint" id="date-hint">날짜를 눌러 변경</div>
         <input type="date" id="main-date-input" onchange="onMainDateChanged()" onclick="event.stopPropagation()" style="display:none;">
     </div>
+    <div class="date-actions" id="date-actions" style="display:none;"><button type="button" class="today-btn" onclick="goToday()">오늘로 돌아가기</button></div>
     <div class="schedule-chips" id="schedule-chips"></div>
 
     <div class="dashboard-grid">
@@ -772,19 +812,19 @@
 
         <div class="middle-column">
             <div class="card">
-                <h2>오늘 시간표</h2>
+                <h2 id="timetable-title">오늘 시간표</h2>
                 <div id="timetable-edit-hint" class="timetable-hint">
                     <svg viewBox="0 0 24 24" style="stroke: currentColor; stroke-width: 1.5; fill: none;"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                     <span>사이드바 메뉴(<strong>≡</strong>)에서 시간표 편집으로<br>이동수업 시간표를 등록하세요.</span>
                 </div>
-                <div id="render-timetable"><div class="loading">...</div></div>
+                <div id="render-timetable"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton short"></div></div>
             </div>
         </div>
 
         <div class="right-column">
             <div class="card">
                 <div class="card-heading"><h2>급식</h2></div>
-                <div id="render-meal"><div class="loading">...</div></div>
+                <div id="render-meal"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton short"></div></div>
             </div>
         </div>
 
@@ -801,6 +841,7 @@
     function todayISO() { return fmtISO(new Date()); }
     function parseISO(s) { return new Date(`${s}T00:00:00`); }
     const DAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+    const SKELETON_HTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton short"></div>';
 
     let liveTimer = null;
     function startLiveTimer() {
@@ -989,6 +1030,30 @@
         renderMealGroups();
     }
 
+    /* 급식 메뉴 줄(알레르기 표시 포함)을 만듭니다. 아래 급식 카드와 NOW 카드가 같이 씁니다. */
+    function buildMealItems(items) {
+        const warningMeals = [];
+        const html = (items || []).map(item => {
+            const selectedNumbers = allergyEnabled ? item.allergies.filter(number => selectedAllergies.has(number)) : [];
+            const warning = selectedNumbers.length > 0;
+            const markers = warning ? ` <small class="meal-allergy-numbers">(${selectedNumbers.map(number => `<span class="meal-allergy-number selected">${number}</span>`).join(', ')})</small>` : '';
+            if (warning) {
+                const foods = selectedNumbers.map(number => ALLERGY_NAMES[number]);
+                warningMeals.push({ name: item.name, foods, particle: getKoreanParticle(item.name, '은', '는'), foodParticle: getKoreanParticle(foods[foods.length - 1], '이', '가') });
+            }
+            return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${escapeHtml(item.name)}${markers}</div>`;
+        }).join('');
+        const warningText = warningMeals.map(item => `<div>${escapeHtml(item.name)}${item.particle} 알레르기 유발 식품인 ${item.foods.join(', ')}${item.foodParticle} 포함되어있습니다.</div>`).join('');
+        return { html, warningHtml: warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '' };
+    }
+
+    /* NOW 카드용 급식: 아래 급식 카드와 같은 모양(둥근 상자 + 메뉴 줄)으로 보여줍니다. */
+    function nowMealHtml(items) {
+        if (!items || !items.length) return '<div class="empty" style="padding:12px 0 4px;">급식 정보 없음</div>';
+        const built = buildMealItems(items);
+        return `<div class="meal-group now-meal">${built.html}</div>${built.warningHtml}`;
+    }
+
     function renderMealGroups() {
         const mealBox = document.getElementById('render-meal');
         const mealTypes = Object.keys(globalMealGroups);
@@ -1000,21 +1065,11 @@
             ? `<div class="meal-tabs" role="tablist">${mealTypes.map(t => `<button type="button" role="tab" class="meal-tab${t === type ? ' active' : ''}" data-type="${escapeHtml(t)}" onclick="setMealTab(this.dataset.type)">${escapeHtml(t)}</button>`).join('')}</div>`
             : '';
 
-        const warningMeals = [];
-        const linesHtml = globalMealGroups[type].map(item => {
-            const warning = allergyEnabled && item.allergies.some(number => selectedAllergies.has(number));
-            const selectedNumbers = item.allergies.filter(number => selectedAllergies.has(number));
-            const markers = allergyEnabled && selectedNumbers.length ? ` <small class="meal-allergy-numbers">(${selectedNumbers.map(number => `<span class="meal-allergy-number selected">${number}</span>`).join(', ')})</small>` : '';
-            if (warning) {
-                const foods = selectedNumbers.map(number => ALLERGY_NAMES[number]);
-                warningMeals.push({ name: item.name, foods, particle: getKoreanParticle(item.name, '은', '는'), foodParticle: getKoreanParticle(foods[foods.length - 1], '이', '가') });
-            }
-            return `<div class="meal-item${warning ? ' allergy-warning' : ''}">${escapeHtml(item.name)}${markers}</div>`;
-        }).join('');
+        const built = buildMealItems(globalMealGroups[type]);
+        const linesHtml = built.html;
 
         const groupHtml = `<div class="meal-group"><div class="meal-group-header"><button class="share-meal-btn" type="button" data-type="${escapeHtml(type)}" onclick="shareMealCard(this.dataset.type)" title="${escapeHtml(type)} 급식 이미지 공유" aria-label="${escapeHtml(type)} 급식 이미지 공유"><svg viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>공유</button></div>${linesHtml}</div>`;
-        const warningText = warningMeals.map(item => `<div>${escapeHtml(item.name)}${item.particle} 알레르기 유발 식품인 ${item.foods.join(', ')}${item.foodParticle} 포함되어있습니다.</div>`).join('');
-        mealBox.innerHTML = (globalOfflineMeal ? '<div class="offline-note">오프라인 · 저장된 데이터를 보여주고 있어요</div>' : '') + tabsHtml + groupHtml + (warningText ? `<div class="meal-allergy-summary">${warningText}</div>` : '');
+        mealBox.innerHTML = (globalOfflineMeal ? '<div class="offline-note">오프라인 · 저장된 데이터를 보여주고 있어요</div>' : '') + tabsHtml + groupHtml + built.warningHtml;
     }
 
     function roundRectPath(context, x, y, width, height, radius) {
@@ -2369,9 +2424,9 @@
         }
     }
 
-    function lunchLinesOf(groups) {
+    function lunchItemsOf(groups) {
         const key = groups['중식'] ? '중식' : Object.keys(groups)[0];
-        return key ? groups[key].map(item => item.name).filter(Boolean) : [];
+        return key ? groups[key].filter(item => item.name) : [];
     }
 
     function emptyMessage(dObj, fallback) {
@@ -2389,12 +2444,6 @@
 
     function timeStr(mins) { return `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`; }
 
-    /* NOW 카드용 급식 목록: 한 줄에 한 메뉴씩, 2열로 보기 좋게 */
-    function mealListHtml(lines) {
-        if (!lines || !lines.length) return '<div class="now-val meal-summary">급식 정보 없음</div>';
-        return `<ul class="now-meal-list">${lines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>`;
-    }
-
     function getSubjectInfo(pNum, rows) {
         const row = pNum ? (rows || []).find(r => parseInt(r.PERIO, 10) === pNum) : null;
         const subName = row ? String(row.ITRT_CNTNT || '').trim() : '';
@@ -2410,10 +2459,13 @@
             return '<div class="empty">시간표 데이터 없음</div>';
         }
         const currentClass = document.getElementById('class-select').value;
+        const timeline = createTimelineFromSettings(getPeriodCount(rows) || 7);
         let html = '<ul class="timetable-list">';
         rows.forEach(r => {
             const fallbackName = (r.ITRT_CNTNT || '').trim();
             const p = r.PERIO;
+            const seg = timeline.find(t => t.p === parseInt(p, 10));
+            const timeLabel = seg ? `<span class="period-time">${timeStr(seg.start)}</span>` : '';
             const movingKey = `${currentClass}-${fallbackName}`;
             const movingData = MAP_MOVING_POOL[movingKey];
             const finalName = movingData ? movingData.newSubject : fallbackName;
@@ -2423,9 +2475,43 @@
             const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
             const badge = movingClass ? `<span class="badge-moving">${escapeHtml(movingClass)}반</span>` : '';
             const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
-            html += `<li><span class="period">${escapeHtml(p)}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${escapeHtml(finalName)}</span>${badge}</div></li>`;
+            html += `<li data-period="${escapeHtml(p)}"><span class="period">${escapeHtml(p)}교시${timeLabel}</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${escapeHtml(finalName)}</span>${badge}</div></li>`;
         });
         return html + '</ul>';
+    }
+
+    /* 오늘 시간표에서 지난 수업은 흐리게, 진행 중인 수업은 강조합니다. */
+    function updateTimetableHighlight() {
+        const box = document.getElementById('render-timetable');
+        if (!box) return;
+        const items = box.querySelectorAll('li[data-period]');
+        if (!items.length) return;
+        const isToday = document.getElementById('main-date-input').value === todayISO();
+        const now = new Date();
+        const mins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+        const timeline = createTimelineFromSettings(getPeriodCount(globalTodayRows) || 7);
+        items.forEach(li => {
+            const seg = timeline.find(t => t.p === parseInt(li.dataset.period, 10));
+            const past = isToday && !!seg && mins >= seg.end;
+            const current = isToday && !!seg && mins >= seg.start && mins < seg.end;
+            li.classList.toggle('is-past', past);
+            li.classList.toggle('is-now', current);
+        });
+    }
+
+    function relativeDayLabel(dObj) {
+        const base = new Date();
+        base.setHours(0, 0, 0, 0);
+        const diff = Math.round((dObj.getTime() - base.getTime()) / 86400000);
+        if (diff === 0) return '오늘';
+        if (diff === 1) return '내일';
+        if (diff === -1) return '어제';
+        return diff > 0 ? `${diff}일 후` : `${-diff}일 전`;
+    }
+
+    function goToday() {
+        document.getElementById('main-date-input').value = todayISO();
+        refresh();
     }
 
     /* 초 단위 갱신: 시계/진행바만 매초 갱신하고, 내용이 바뀔 때만 카드를 다시 그립니다. */
@@ -2438,6 +2524,7 @@
         const mins = pad2(now.getMinutes());
         const secs = pad2(now.getSeconds());
         if (clockEl) clockEl.innerText = showSeconds ? `${hrs}:${mins}:${secs}` : `${hrs}:${mins}`;
+        updateTimetableHighlight();
         if (!container || nowState === 'loading') return;
 
         const totalMins = now.getHours() * 60 + now.getMinutes();
@@ -2500,7 +2587,7 @@
                 const month = next.getMonth() + 1;
                 const date = next.getDate();
                 const tomorrowMeal = globalTomorrowMealLines.length
-                    ? `<div class="now-section next-event"><div class="now-lbl">${month}월 ${date}일 급식</div>${mealListHtml(globalTomorrowMealLines)}</div>`
+                    ? `<div class="now-section next-event"><div class="now-lbl">${month}월 ${date}일 급식</div>${nowMealHtml(globalTomorrowMealLines)}</div>`
                     : '';
                 return `<div class="now-main">
                         <div class="now-time-label">학교 종료</div>
@@ -2548,12 +2635,12 @@
 
             if (found.p === 'lunch') {
                 // 점심시간
-                const mealLines = lunchLinesOf(nowMealGroups);
+                const mealItems = lunchItemsOf(nowMealGroups);
                 const nextP = lunchAfter + 1;
                 return `<div class="now-main">
                         <div class="now-time-label">점심시간</div>
                         <div class="now-subtitle" style="margin-bottom:10px;">오늘의 급식</div>
-                        ${mealListHtml(mealLines)}
+                        ${nowMealHtml(mealItems)}
                         <div class="now-time-info">
                             <span>${timeStr(found.start)} ~ ${timeStr(found.end)}</span>
                             <span class="now-remaining">${remaining}분 남음</span>
@@ -2613,6 +2700,7 @@
 
     /* ================= 새로고침 ================= */
     let refreshSeq = 0;
+    let lastRefreshAt = 0;
 
     async function refresh() {
         const seq = ++refreshSeq;
@@ -2621,6 +2709,14 @@
         const dObj = parseISO(rawDate);
 
         document.getElementById('meta-date-label').innerHTML = `${dObj.getMonth() + 1}월 ${dObj.getDate()}일 ${DAY_KO[dObj.getDay()]}요일`;
+        lastRefreshAt = Date.now();
+        const isTodaySelected = rawDate === todayISO();
+        const hintEl = document.getElementById('date-hint');
+        if (hintEl) hintEl.textContent = `${relativeDayLabel(dObj)} · 날짜를 눌러 변경`;
+        const ttTitle = document.getElementById('timetable-title');
+        if (ttTitle) ttTitle.textContent = `${relativeDayLabel(dObj)} 시간표`;
+        const actionsEl = document.getElementById('date-actions');
+        if (actionsEl) actionsEl.style.display = isTodaySelected ? 'none' : 'block';
 
         const g = document.getElementById('grade-select').value;
         const c = document.getElementById('class-select').value;
@@ -2629,8 +2725,8 @@
 
         const timeBox = document.getElementById('render-timetable');
         const mealBox = document.getElementById('render-meal');
-        timeBox.innerHTML = '<div class="loading">...</div>';
-        mealBox.innerHTML = '<div class="loading">...</div>';
+        timeBox.innerHTML = SKELETON_HTML;
+        mealBox.innerHTML = SKELETON_HTML;
 
         const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
         const schedP = Promise.all([ensureSchedule(dObj), ensureSchedule(new Date()), ensureSchedule(nextMonth)]).catch(() => {});
@@ -2658,6 +2754,7 @@
             timeBox.innerHTML = '<div class="empty">시간표 수집 실패</div>';
         }
         updateTimetableHint();
+        updateTimetableHighlight();
 
         // 선택한 날짜의 급식
         if (mealR.status === 'fulfilled') {
@@ -2711,7 +2808,7 @@
         const [tt, meal] = await Promise.allSettled([loadTimetable(apiStr, g, c), loadMealGroups(apiStr)]);
         if (seq !== undefined && seq !== refreshSeq) return;
         globalTomorrowRows = tt.status === 'fulfilled' ? tt.value.rows : [];
-        globalTomorrowMealLines = meal.status === 'fulfilled' ? lunchLinesOf(meal.value.groups) : [];
+        globalTomorrowMealLines = meal.status === 'fulfilled' ? lunchItemsOf(meal.value.groups) : [];
         lastNowHtml = '';
         computeLiveTimeline();
     }
@@ -3017,6 +3114,9 @@
         if (today !== lastTodayISO) {
             lastTodayISO = today;
             document.getElementById('main-date-input').value = today;
+            refresh();
+        } else if (Date.now() - lastRefreshAt > 10 * 60 * 1000) {
+            // 10분 넘게 지났으면 최신 정보로 다시 불러옵니다.
             refresh();
         } else {
             computeLiveTimeline();
