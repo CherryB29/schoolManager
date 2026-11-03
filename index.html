@@ -510,6 +510,13 @@
         .calendar-event-date { flex: 0 0 34px; color: var(--text-secondary); font-weight: 700; }
         .calendar-event.off .calendar-event-date { color: inherit; opacity: 0.8; }
 
+        .now-meal-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .now-meal-list li { padding: 9px 11px; border-radius: 10px; background: var(--bg-color); border: 1px solid var(--divider); font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--text-main); overflow-wrap: anywhere; word-break: keep-all; }
+        .now-section .now-meal-list { margin-bottom: 0; }
+        .now-section .now-meal-list li { background: var(--card-bg); }
+        .now-main .now-meal-list li { background: var(--card-bg); }
+        @media (max-width: 340px) { .now-meal-list { grid-template-columns: 1fr; } }
+
         .offline-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: rgba(245,158,11,0.14); color: #B45309; font-size: 12px; font-weight: 700; }
         [data-theme="dark"] .offline-note { color: #FBBF24; }
 
@@ -2382,6 +2389,12 @@
 
     function timeStr(mins) { return `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`; }
 
+    /* NOW 카드용 급식 목록: 한 줄에 한 메뉴씩, 2열로 보기 좋게 */
+    function mealListHtml(lines) {
+        if (!lines || !lines.length) return '<div class="now-val meal-summary">급식 정보 없음</div>';
+        return `<ul class="now-meal-list">${lines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>`;
+    }
+
     function getSubjectInfo(pNum, rows) {
         const row = pNum ? (rows || []).find(r => parseInt(r.PERIO, 10) === pNum) : null;
         const subName = row ? String(row.ITRT_CNTNT || '').trim() : '';
@@ -2487,7 +2500,7 @@
                 const month = next.getMonth() + 1;
                 const date = next.getDate();
                 const tomorrowMeal = globalTomorrowMealLines.length
-                    ? `<div class="now-section next-event"><div class="now-lbl">${month}월 ${date}일 급식</div><div class="now-val meal-summary">${escapeHtml(globalTomorrowMealLines.join(', '))}</div></div>`
+                    ? `<div class="now-section next-event"><div class="now-lbl">${month}월 ${date}일 급식</div>${mealListHtml(globalTomorrowMealLines)}</div>`
                     : '';
                 return `<div class="now-main">
                         <div class="now-time-label">학교 종료</div>
@@ -2535,12 +2548,12 @@
 
             if (found.p === 'lunch') {
                 // 점심시간
-                const meals = lunchLinesOf(nowMealGroups).join(', ');
+                const mealLines = lunchLinesOf(nowMealGroups);
                 const nextP = lunchAfter + 1;
                 return `<div class="now-main">
                         <div class="now-time-label">점심시간</div>
-                        <div class="now-subtitle">오늘의 급식</div>
-                        <div class="now-val meal-summary">${escapeHtml(meals) || '급식 정보 없음'}</div>
+                        <div class="now-subtitle" style="margin-bottom:10px;">오늘의 급식</div>
+                        ${mealListHtml(mealLines)}
                         <div class="now-time-info">
                             <span>${timeStr(found.start)} ~ ${timeStr(found.end)}</span>
                             <span class="now-remaining">${remaining}분 남음</span>
