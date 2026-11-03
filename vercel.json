@@ -1,8 +1,0 @@
-{
-  "functions": {
-    "api/push-cron.js": { "maxDuration": 60 }
-  },
-  "crons": [
-    { "path": "/api/push-cron?all=1", "schedule": "30 22 * * *" }
-  ]
-}
