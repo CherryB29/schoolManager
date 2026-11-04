@@ -535,8 +535,7 @@
         .menu-clickable:active { opacity: 0.7; }
 
         /* 시간표: 시작 시각, 지난 수업, 진행 중 수업 */
-        .period { width: 58px; line-height: 1.2; flex-shrink: 0; }
-        .period-time { display: block; margin-top: 3px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.75; }
+        .period { flex-shrink: 0; }
         .timetable-list li { transition: opacity 0.3s ease, background 0.3s ease; }
         .timetable-list li.is-past { opacity: 0.45; }
         .timetable-list li.is-now { margin: 2px -12px; padding: 14px 12px; border-radius: 14px; border-bottom-color: transparent; background: rgba(49,130,246,0.09); }
@@ -2459,13 +2458,10 @@
             return '<div class="empty">시간표 데이터 없음</div>';
         }
         const currentClass = document.getElementById('class-select').value;
-        const timeline = createTimelineFromSettings(getPeriodCount(rows) || 7);
         let html = '<ul class="timetable-list">';
         rows.forEach(r => {
             const fallbackName = (r.ITRT_CNTNT || '').trim();
             const p = r.PERIO;
-            const seg = timeline.find(t => t.p === parseInt(p, 10));
-            const timeLabel = seg ? `<span class="period-time">${timeStr(seg.start)}</span>` : '';
             const movingKey = `${currentClass}-${fallbackName}`;
             const movingData = MAP_MOVING_POOL[movingKey];
             const finalName = movingData ? movingData.newSubject : fallbackName;
@@ -2475,7 +2471,7 @@
             const dot = cid ? `<span class="color-dot" style="background:var(--sub-${cid});"></span>` : '';
             const badge = movingClass ? `<span class="badge-moving">${escapeHtml(movingClass)}반</span>` : '';
             const textStyle = cid ? `color:var(--sub-txt-${cid}); font-weight:700; background:var(--sub-${cid}); padding:2px 6px; border-radius:6px;` : '';
-            html += `<li data-period="${escapeHtml(p)}"><span class="period">${escapeHtml(p)}교시${timeLabel}</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${escapeHtml(finalName)}</span>${badge}</div></li>`;
+            html += `<li data-period="${escapeHtml(p)}"><span class="period">${escapeHtml(p)}교시</span><div class="subject-container">${dot}<span class="subject" style="${textStyle}">${escapeHtml(finalName)}</span>${badge}</div></li>`;
         });
         return html + '</ul>';
     }
