@@ -5,18 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="google-site-verification" content="FWEX3h-e6Y9PM6Mmn9VNLDovW8xwAN96FacGjGER518" />
     <meta name="naver-site-verification" content="f22cf6f472c53c842eaaa09b5bddb27318a0473f" />
-    <title>먼지</title>
-    <meta name="description" content="먼지: 학교 시간표, 급식, 이동수업을 한 번에 확인하는 한국 학교 일정 관리 앱입니다.">
-    <meta name="keywords" content="학교 시간표, 급식, 이동수업, 학사 일정, 한국 학교, 먼지 앱, 수업 관리">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="먼지">
-    <meta property="og:description" content="학교 시간표, 급식, 이동수업 정보를 빠르게 확인하는 웹 앱입니다.">
+    <title>먼지 - 학교 시간표·급식·학사일정 한눈에 보기</title>
+    <meta name="description" content="먼지는 우리 학교 오늘의 시간표, 급식 메뉴, 이동수업 교실, 학사일정을 한 화면에서 보여주는 무료 웹 앱입니다. 학교와 반만 고르면 NEIS 정보를 바로 불러오고, 홈 화면에 추가해 아침 알림까지 받을 수 있어요.">
+    <meta name="keywords" content="학교 시간표, 오늘 급식, 급식 메뉴, 이동수업 시간표, 학사일정, 중학교 시간표, 고등학교 시간표, 초등학교 시간표, 나이스 시간표, 학교 앱, 먼지">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://school-manager-zeta.vercel.app/">
+    <meta property="og:title" content="먼지 - 학교 시간표·급식·학사일정 한눈에 보기">
+    <meta property="og:description" content="오늘의 시간표, 급식, 이동수업 교실, 학사일정을 한 화면에서. 학교와 반만 고르면 끝나는 무료 학교 앱.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://school-manager-zeta.vercel.app/">
+    <meta property="og:image" content="https://school-manager-zeta.vercel.app/app-icon.png">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:site_name" content="먼지">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="먼지">
-    <meta name="twitter:description" content="학교 시간표, 급식, 이동수업을 한 번에 확인하는 한국 학교 일정 관리 앱입니다.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="먼지 - 학교 시간표·급식·학사일정 한눈에 보기">
+    <meta name="twitter:description" content="오늘의 시간표, 급식, 이동수업 교실, 학사일정을 한 화면에서. 학교와 반만 고르면 끝나는 무료 학교 앱.">
+    <meta name="twitter:image" content="https://school-manager-zeta.vercel.app/app-icon.png">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"먼지","alternateName":"Meonji","url":"https://school-manager-zeta.vercel.app/","description":"학교 시간표, 급식, 이동수업, 학사일정을 한 화면에서 확인하는 무료 웹 앱","applicationCategory":"EducationalApplication","operatingSystem":"Any","inLanguage":"ko","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+    </script>
     <meta name="application-name" content="먼지">
     <meta name="apple-mobile-web-app-title" content="먼지">
     <link rel="apple-touch-icon" sizes="180x180" href="app-icon.png">
@@ -849,12 +856,16 @@
     }
 
     /* 오프라인용 캐시 (최근 24개 항목만 보관) */
-    function cacheGet(key) {
+    function cacheGet(key, maxAgeMs) {
         try {
             const all = JSON.parse(localStorage.getItem('OFFLINE_CACHE') || '{}');
-            return all[key] ? all[key].v : null;
+            const hit = all[key];
+            if (!hit) return null;
+            if (maxAgeMs && Date.now() - hit.t > maxAgeMs) return null;
+            return hit.v;
         } catch (e) { return null; }
     }
+    const TIMETABLE_CACHE_MS = 4 * 60 * 60 * 1000; // 시간표는 4시간 동안 저장된 값을 사용
     function cacheSet(key, value) {
         try {
             const all = JSON.parse(localStorage.getItem('OFFLINE_CACHE') || '{}');
@@ -2365,6 +2376,8 @@
 
     async function loadTimetable(apiStr, g, c) {
         const cacheKey = `tt:${SCHUL_CODE}:${g}:${c}:${apiStr}`;
+        const fresh = cacheGet(cacheKey, TIMETABLE_CACHE_MS);
+        if (fresh) return { rows: fresh, offline: false };
         try {
             const res = await fetchNeis(SCHOOL_TYPE, {
                 Type: 'json',
