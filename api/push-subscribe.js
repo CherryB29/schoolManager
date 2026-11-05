@@ -36,6 +36,7 @@ module.exports = async function handler(req, res) {
         updated: Date.now()
       });
       await redis.sadd('push:subs', id);
+      await redis.hset('push:times', { [id]: prefs.time });
       return res.status(200).json({ ok: true });
     }
 
@@ -44,6 +45,7 @@ module.exports = async function handler(req, res) {
       const id = subId(body.endpoint);
       await redis.del(subKey(id));
       await redis.srem('push:subs', id);
+      await redis.hdel('push:times', id);
       return res.status(200).json({ ok: true });
     }
 
@@ -56,6 +58,7 @@ module.exports = async function handler(req, res) {
       const now = kstNow();
       const message = await buildDailyMessage(record.prefs, now.ymd, now.dow, new Map(), { force: true });
       message.title = `[테스트] ${message.title}`;
+      delete message.ymd; // 테스트는 급식 알림도 항상 보내고, 오늘 발송 기록을 건드리지 않음
       const result = await sendOne(redis, id, record, message);
       if (result !== 'sent') return res.status(502).json({ error: '알림 전송에 실패했어요.' });
       return res.status(200).json({ ok: true });
