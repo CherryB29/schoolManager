@@ -31,24 +31,38 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ skipped: 'weekend' });
     }
 
-    const ids = (await redis.smembers('push:subs')) || [];
+    // push:times (id -> "HH:MM") 덕분에, 시간이 안 된 사람은 기록을 읽지 않고 건너뜁니다.
+    const [idsRaw, timesRaw] = await Promise.all([redis.smembers('push:subs'), redis.hgetall('push:times')]);
+    const ids = idsRaw || [];
+    const times = timesRaw || {};
     const ctx = new Map();
-    const stats = { total: ids.length, sent: 0, skipped: 0, removed: 0, failed: 0 };
+    const hh = String(Math.floor(now.minutes / 60)).padStart(2, '0');
+    const mm = String(now.minutes % 60).padStart(2, '0');
+    // 진단용: skipped 가 왜 생겼는지 이유별로 셉니다.
+    const stats = {
+      nowKst: `${hh}:${mm}`, total: ids.length, sent: 0, skipped: 0, removed: 0, failed: 0,
+      alreadySent: 0, notDue: 0, noMessage: 0
+    };
 
     const handle = async id => {
+      if (!all && times[id]) {
+        const d = now.minutes - minutesOf(times[id]);
+        if (d < 0 || d >= windowMin) { stats.skipped++; stats.notDue++; return; }
+      }
       const record = await redis.get(subKey(id));
       if (!record || !record.sub || !record.prefs) {
         await redis.srem('push:subs', id);
         stats.removed++;
         return;
       }
-      if (record.lastSent === now.ymd) { stats.skipped++; return; }
+      if (!times[id]) await redis.hset('push:times', { [id]: record.prefs.time || '07:30' }); // 예전 기록 보정
+      if (record.lastSent === now.ymd) { stats.skipped++; stats.alreadySent++; return; }
       if (!all) {
         const diff = now.minutes - minutesOf(record.prefs.time);
-        if (diff < 0 || diff >= windowMin) { stats.skipped++; return; }
+        if (diff < 0 || diff >= windowMin) { stats.skipped++; stats.notDue++; return; }
       }
       const message = await buildDailyMessage(record.prefs, now.ymd, now.dow, ctx);
-      if (!message) { stats.skipped++; return; }
+      if (!message) { stats.skipped++; stats.noMessage++; return; }
       const result = await sendOne(redis, id, record, message);
       if (result === 'sent') {
         record.lastSent = now.ymd;
